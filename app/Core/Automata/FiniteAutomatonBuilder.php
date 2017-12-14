@@ -2,8 +2,9 @@
 
 namespace App\Core\Automata;
 
-use Exception;
+use App\Core\Inspector;
 use App\Core\Syntax\Regex\TreeTypes;
+use Exception;
 
 class FiniteAutomatonBuilder
 {
@@ -22,6 +23,15 @@ class FiniteAutomatonBuilder
         $exit = new State();
         $exit->setFinal();
         $entry->addTransition($exit, [$c]);
+
+        $inspector = resolve('App\Core\Inspector');
+        $inspector->updateArray('actions', [
+            'action'     => 'c',
+            'entry'      => $entry,
+            'transition' => $c,
+            'exit'       => $exit
+        ]);
+
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 
@@ -31,6 +41,17 @@ class FiniteAutomatonBuilder
         $exit = new State();
         $entry->addTransition($exit);
         $exit->setFinal();
+
+        $inspector = resolve('App\Core\Inspector');
+        $inspector->updateArray('actions',
+            [
+                'action'     => 'e',
+                'entry'      => $entry,
+                'transition' => 'ε',
+                'exit'       => $exit
+            ]
+        );
+
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 
@@ -38,6 +59,16 @@ class FiniteAutomatonBuilder
     {
         $nfa->exit->addTransition($nfa->entry);
         $nfa->entry->addTransition($nfa->exit);
+
+        $inspector = resolve('App\Core\Inspector');
+        $inspector->updateArray('actions',
+            [
+                'action' => 'rep',
+                'state1' => $nfa->entry,
+                'state2' => $nfa->exit
+            ]
+        );
+
         return $nfa;
     }
 
@@ -46,6 +77,17 @@ class FiniteAutomatonBuilder
         $first->exit->setFinal(false);
         $second->exit->setFinal();
         $first->exit->addTransition($second->entry);
+
+        $inspector = resolve('App\Core\Inspector');
+        $inspector->updateArray('actions',
+            [
+                'action'     => 's',
+                'entry'      => $first->exit,
+                'transition' => 'ε',
+                'exit'       => $second->entry
+            ]
+        );
+
         return new FiniteAutomatonBuilder($first->entry, $second->exit);
     }
 
@@ -60,6 +102,15 @@ class FiniteAutomatonBuilder
         $entry->addTransition($choice2->entry);
         $choice1->exit->addTransition($exit);
         $choice2->exit->addTransition($exit);
+
+        /*$this->collect(
+            [
+                'entry'      => serialize($entry),
+                'transition' => 'ε',
+                'exit'       => serialize($exit)
+            ]
+        );*/
+
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 

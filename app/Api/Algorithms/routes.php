@@ -2,6 +2,6 @@
 
 Route::get('/', 'AlgorithmController@index');
 
-// Regex to NFA
-Route::get('/regex2nfa/{regex}', 'AlgorithmController@regexToNFA');
+Route::get('/regex2nfa/{regex}', 'AlgorithmController@regexToNfa');
+Route::post('/nfa2dfa', 'AlgorithmController@nfaToDfa');
 

@@ -2,13 +2,10 @@
 
 namespace App\Core\Syntax\Regex;
 
-use App\Core\Inspector\TInspector;
 use Exception;
 
 class RegexParser
 {
-    use TInspector;
-
     private $input;
 
     public function __construct(string $input)

@@ -4,6 +4,7 @@ namespace App\Api\Algorithms\Controllers;
 
 use App\Api\Algorithms\Services\AlgorithmService;
 use App\Infrastructure\Http\Controller;
+use Illuminate\Http\Request;
 
 class AlgorithmController extends Controller
 {
@@ -24,10 +25,15 @@ class AlgorithmController extends Controller
         );
     }
 
-    public function regexToNFA($regex)
+    public function regexToNfa($regex)
     {
         // Regex validation
 
-        return $this->response($this->service->regexToNFA($regex));
+        return $this->response($this->service->regexToNfa($regex));
+    }
+
+    public function nfaToDfa(Request $request)
+    {
+        return [];
     }
 }

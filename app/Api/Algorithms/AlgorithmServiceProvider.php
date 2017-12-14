@@ -2,9 +2,15 @@
 
 namespace App\Api\Algorithms;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider;
+use App\Core\Inspector;
+use Illuminate\Support\ServiceProvider;
 
-class AlgorithmServiceProvider extends EventServiceProvider
+class AlgorithmServiceProvider extends ServiceProvider
 {
-    protected $listen = [];
+    public function register()
+    {
+        $this->app->singleton('App\Core\Inspector', function ($app) {
+            return new Inspector(); //$app->make('HttpClient')
+        });
+    }
 }

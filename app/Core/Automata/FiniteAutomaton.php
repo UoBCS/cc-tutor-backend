@@ -5,8 +5,9 @@ namespace App\Core\Automata;
 use App\Core\Syntax\Regex;
 use App\Core\Syntax\Token\TokenType;
 use App\Infrastructure\Utils\Ds\Set;
+use JsonSerializable;
 
-class FiniteAutomaton
+class FiniteAutomaton implements JsonSerializable
 {
     private $initial;
 
@@ -29,8 +30,9 @@ class FiniteAutomaton
         return $nfa;
     }
 
-    public static function fromRegex(Regex\IRegex $regex)
+    public static function fromRegex(Regex\IRegex $regex, bool $returnRegexTree = false)
     {
+        // Build regex tree
         $regexParser = new Regex\RegexParser($regex->getRegex());
         $regexTree = $regexParser->parse();
 
@@ -44,7 +46,10 @@ class FiniteAutomaton
             $fa->setDataOnFinalStates($regex);
         }
 
-        return $fa;
+        return [
+            'nfa'        => $fa,
+            'regex_tree' => $regexTree
+        ];
     }
 
     public function getInitial()
@@ -52,62 +57,10 @@ class FiniteAutomaton
         return $initial;
     }
 
-    public function setIds()
+    public function traverse($fn1, $data1, $fn2, $data2, $return = -1)
     {
         $S = [];
         $visited = new Set();
-
-        array_push($S, $this->initial);
-        $id = 0;
-
-        while (count($S) !== 0) {
-            $s = array_pop($S);
-            if (!$visited->contains($s)) { //!in_array(serialize($s), array_keys($visited), true)) {
-                //$visited[serialize($s)] = null;
-                $visited->add($s);
-
-                $s->setId($id++);
-
-                foreach ($s->getConnectedStates() as $c => $states) {
-                    foreach ($states as $state) {
-                        array_push($S, $state);
-                    }
-                }
-            }
-        }
-    }
-
-    public function setDataOnFinalStates(TokenType $token)
-    {
-        $S = [];
-        $visited = new Set();
-
-        array_push($S, $this->initial);
-
-        while (count($S) !== 0) {
-            $s = array_pop($S);
-            if (!$visited->contains($s)) { //!in_array(serialize($s), array_keys($visited), true)) {
-                //$visited[(string) $s] = null;
-                $visited->add($s);
-
-                if ($s->isFinal()) {
-                    $s->setData($token);
-                }
-
-                foreach ($s->getConnectedStates() as $c => $states) {
-                    foreach ($states as $state) {
-                        array_push($S, $state);
-                    }
-                }
-            }
-        }
-    }
-
-    public function __toString()
-    {
-        $S = [];
-        $visited = new Set();
-        $str = '';
 
         array_push($S, $this->initial);
 
@@ -116,11 +69,15 @@ class FiniteAutomaton
             if (!$visited->contains($s)) {
                 $visited->add($s);
 
+                if (isset($fn1)) {
+                    $data1 = call_user_func($fn1, $s, $data1);
+                }
+
                 foreach ($s->getConnectedStates() as $c => $states) {
                     foreach ($states as $state) {
-                        $srcId = $s->getId();
-                        $destId = $state->getId();
-                        $str .= "($srcId, $c, $destId)\n";
+                        if (isset($fn2)) {
+                            $data2 = call_user_func($fn2, $s, $c, $state, $data2);
+                        }
 
                         array_push($S, $state);
                     }
@@ -128,6 +85,52 @@ class FiniteAutomaton
             }
         }
 
-        return $str;
+        if ($return === 0) {
+            return $data1;
+        } else if ($return === 1) {
+            return $data2;
+        } else if ($return === 2) {
+            return [
+                'data1' => $data1,
+                'data2' => $data2
+            ];
+        }
+    }
+
+    public function setIds()
+    {
+        $fn = function ($s, $id) {
+            $s->setId($id++);
+            return $id;
+        };
+
+        $this->traverse($fn, 0, null, null);
+    }
+
+    public function setDataOnFinalStates(TokenType $token)
+    {
+        $fn = function ($s) use ($token) {
+            if ($s->isFinal()) {
+                $s->setData($token);
+            }
+        };
+
+        $this->traverse($fn, 0, null, null);
+    }
+
+    public function jsonSerialize()
+    {
+        return [];
+    }
+
+    public function __toString()
+    {
+        $fn = function ($src, $c, $dest, $str) {
+            $srcId = $src->getId();
+            $destId = $dest->getId();
+            return $str . "($srcId, $c, $destId)\n";
+        };
+
+        return $this->traverse(null, null, $fn, '', 1);
     }
 }

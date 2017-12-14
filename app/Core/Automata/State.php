@@ -3,8 +3,9 @@
 namespace App\Core\Automata;
 
 use App\Core\Syntax\Char;
+use JsonSerializable;
 
-class State
+class State implements JsonSerializable
 {
     protected $id;
     protected $data;
@@ -68,9 +69,14 @@ class State
         return $this->connectedStates[$c];
     }
 
-    public function toString()
+    public function jsonSerialize()
     {
-        return $this->isFinal ? "||$str($data)||" : $str;
+        return $this->isFinal ? "||$this->id||" : $this->id . '';
+    }
+
+    public function __toString()
+    {
+        return $this->isFinal ? "||$this->id||" : $this->id . '';
     }
 
     private function _addTransition(self $state, string $c)

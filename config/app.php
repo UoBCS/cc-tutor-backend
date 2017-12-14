@@ -173,6 +173,7 @@ return [
         /*
          * Application Service Providers...
          */
+        App\Api\Algorithms\AlgorithmServiceProvider::class,
         App\Api\Users\UserServiceProvider::class,
         App\Infrastructure\Auth\AuthServiceProvider::class,
         App\Infrastructure\Http\Providers\RouteServiceProvider::class,
