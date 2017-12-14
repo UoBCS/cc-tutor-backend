@@ -66,8 +66,6 @@ class RouteServiceProvider extends ServiceProvider
                     // Checks whether .routes_no_prefix exists
                     // if true don't add any prefix
                     // if false add prefix
-
-
                     if (!File::exists("$segment/.route_settings")) {
                         $router->prefix(strtolower(basename($segment)));
                     } else {
