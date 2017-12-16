@@ -21,7 +21,7 @@ class AlgorithmService
         return [
             'regex_tree'              => $result['regex_tree'],
             'regex_tree_to_nfa_steps' => $this->inspector->getState()['actions'],
-            'nfa'                     => strval($result['nfa'])
+            'nfa'                     => $result['nfa']
         ];
     }
 }

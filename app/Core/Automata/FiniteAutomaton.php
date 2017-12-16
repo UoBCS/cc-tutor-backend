@@ -120,7 +120,12 @@ class FiniteAutomaton implements JsonSerializable
 
     public function jsonSerialize()
     {
-        return [];
+        $fn = function ($src, $c, $dest, $arr) {
+            $arr[] = [$src, $c, $dest];
+            return $arr;
+        };
+
+        return $this->traverse(null, null, $fn, [], 1);
     }
 
     public function __toString()
