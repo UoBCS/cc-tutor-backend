@@ -50,6 +50,7 @@ class RouteServiceProvider extends ServiceProvider
 
                 // Protection middleware if routes_protected.php or routes.php
                 $middleware = ['auth:api'];
+                $publicMiddleware = [];
 
                 foreach ($fileNames as $fileName => $protected) {
                     $path = "$segment/$fileName.php";
@@ -60,7 +61,7 @@ class RouteServiceProvider extends ServiceProvider
                     }
 
                     // Add middleware and namespace to router
-                    $router = Route::middleware($protected ? $middleware : [])
+                    $router = Route::middleware($protected ? $middleware : $publicMiddleware)
                                     ->namespace($namespaces[$part] . '\\' . basename($segment) . '\\Controllers');
 
                     // Checks whether .routes_no_prefix exists

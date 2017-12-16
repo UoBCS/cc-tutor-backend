@@ -36,9 +36,8 @@ class RegisterController extends Controller
         $user = $this->create($request->all());
         dispatch(new SendVerificationEmail($user));
 
-        return $this->response([
-            'confirmation_token' => $user->email_token
-        ], 201);
+        return response(201);
+        //$this->response(['confirmation_token' => $user->email_token], 201);
     }
 
     public function verify($token)
@@ -47,7 +46,7 @@ class RegisterController extends Controller
         $user->verified = true;
 
         if ($user->save()) {
-            return response(201); // $this->response([], 201);
+            return $this->response($user); // response(200); // $this->response([], 201);
         }
 
         throw new SymfonyException\UnprocessableEntityHttpException('Could not verify user.');
