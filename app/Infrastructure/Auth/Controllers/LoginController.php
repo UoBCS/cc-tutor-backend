@@ -65,4 +65,9 @@ class LoginController extends Controller
 
         return $this->response(null, 204);
     }
+
+    public function isAuthenticated()
+    {
+        return $this->response(null, 200);
+    }
 }
