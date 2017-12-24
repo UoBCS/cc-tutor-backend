@@ -51,7 +51,7 @@ class RegexParser
         $term = $this->term();
 
         if ($this->more() && $this->peek() === '|') {
-            eat('|');
+            $this->eat('|');
             $regex = $this->regex();
             return new TreeTypes\Choice($term, $regex);
         } else {
@@ -128,9 +128,9 @@ class RegexParser
             return new TreeTypes\AnyChar();
 
         case '[':
-            eat('[');
-            $gr = group();
-            eat(']');
+            $this->eat('[');
+            $gr = $this->group();
+            $this->eat(']');
             return $gr;
 
         default:
