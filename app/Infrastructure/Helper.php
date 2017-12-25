@@ -39,3 +39,13 @@ function getOnly($keys, $data)
 
     return $newData;
 }
+
+function startsWith($haystack, $needle)
+{
+    return strncmp($haystack, $needle, strlen($needle)) === 0;
+}
+
+function endsWith($haystack, $needle)
+{
+    return $needle === '' || substr_compare($haystack, $needle, -strlen($needle)) === 0;
+}

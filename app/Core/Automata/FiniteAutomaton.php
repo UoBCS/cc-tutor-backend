@@ -4,7 +4,9 @@ namespace App\Core\Automata;
 
 use App\Core\Syntax\Regex;
 use App\Core\Syntax\Token\TokenType;
-use App\Infrastructure\Utils\Ds\Set;
+use Ds\Map;
+use Ds\Set;
+use Ds\Stack;
 use JsonSerializable;
 
 class FiniteAutomaton implements JsonSerializable
@@ -52,20 +54,41 @@ class FiniteAutomaton implements JsonSerializable
         ];
     }
 
+    public static function fromArray($arr)
+    {
+        $states = [];
+
+        foreach ($arr as $entry) {
+            if (!isset($states[$entry['src']['id']])) {
+                $states[$entry['src']['id']] = new State($entry['src']['id']);
+                $states[$entry['src']['id']]->setFinal($entry['src']['final']);
+            }
+
+            if (!isset($states[$entry['dest']['id']])) {
+                $states[$entry['dest']['id']] = new State($entry['dest']['id']);
+                $states[$entry['dest']['id']]->setFinal($entry['dest']['final']);
+            }
+
+            $states[$entry['src']['id']]->addTransition($states[$entry['dest']['id']], [$entry['char']]);
+        }
+
+        return new FiniteAutomaton($states[0]);
+    }
+
     public function getInitial()
     {
-        return $initial;
+        return $this->initial;
     }
 
     public function traverse($fn1, $data1, $fn2, $data2, $return = -1)
     {
-        $S = [];
+        $S = new Stack();
         $visited = new Set();
 
-        array_push($S, $this->initial);
+        $S->push($this->initial);
 
-        while (count($S) !== 0) {
-            $s = array_pop($S);
+        while (!$S->isEmpty()) {
+            $s = $S->pop();
             if (!$visited->contains($s)) {
                 $visited->add($s);
 
@@ -79,7 +102,7 @@ class FiniteAutomaton implements JsonSerializable
                             $data2 = call_user_func($fn2, $s, $c, $state, $data2);
                         }
 
-                        array_push($S, $state);
+                        $S->push($state);
                     }
                 }
             }
@@ -104,7 +127,7 @@ class FiniteAutomaton implements JsonSerializable
             return $id;
         };
 
-        $this->traverse($fn, 0, null, null);
+        $this->traverse($fn, 0, NULL, NULL);
     }
 
     public function setDataOnFinalStates(TokenType $token)
@@ -115,17 +138,26 @@ class FiniteAutomaton implements JsonSerializable
             }
         };
 
-        $this->traverse($fn, 0, null, null);
+        $this->traverse($fn, 0, NULL, NULL);
+    }
+
+    public function toDfa()
+    {
+        return DfaConverter::toDfa($this->initial);
     }
 
     public function jsonSerialize()
     {
         $fn = function ($src, $c, $dest, $arr) {
-            $arr[] = [$src, $c, $dest];
+            $arr[] = [
+                'src'  => $src,
+                'char' => $c,
+                'dest' => $dest
+            ];
             return $arr;
         };
 
-        return $this->traverse(null, null, $fn, [], 1);
+        return $this->traverse(NULL, NULL, $fn, [], 1);
     }
 
     public function __toString()
@@ -136,6 +168,6 @@ class FiniteAutomaton implements JsonSerializable
             return $str . "($srcId, $c, $destId)\n";
         };
 
-        return $this->traverse(null, null, $fn, '', 1);
+        return $this->traverse(NULL, NULL, $fn, '', 1);
     }
 }

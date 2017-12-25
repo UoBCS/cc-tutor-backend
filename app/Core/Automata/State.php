@@ -66,12 +66,16 @@ class State implements JsonSerializable
 
     public function getState(string $c)
     {
-        return $this->connectedStates[$c];
+        return isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
     }
 
     public function jsonSerialize()
     {
-        return $this->isFinal ? "||$this->id||" : $this->id . '';
+        return [
+            'id' => $this->id,
+            'data' => $this->data,
+            'final' => $this->isFinal
+        ];//$this->isFinal ? "||$this->id||" : $this->id . '';
     }
 
     public function __toString()

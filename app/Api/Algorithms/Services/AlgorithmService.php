@@ -24,4 +24,10 @@ class AlgorithmService
             'nfa'                     => $result['nfa']
         ];
     }
+
+    public function nfaToDfa($nfa)
+    {
+        $result = FiniteAutomaton::fromArray($nfa)->toDfa();
+        return $result;
+    }
 }
