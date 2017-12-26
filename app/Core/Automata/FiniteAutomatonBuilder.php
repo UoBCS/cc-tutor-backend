@@ -24,7 +24,7 @@ class FiniteAutomatonBuilder
         $exit->setFinal();
         $entry->addTransition($exit, [$c]);
 
-        $inspector = resolve('App\Core\Inspector');
+        $inspector = inspector();
         $inspector->updateArray('actions', [
             'action'     => 'c',
             'entry'      => $entry,
@@ -42,7 +42,7 @@ class FiniteAutomatonBuilder
         $entry->addTransition($exit);
         $exit->setFinal();
 
-        $inspector = resolve('App\Core\Inspector');
+        $inspector = inspector();
         $inspector->updateArray('actions',
             [
                 'action'     => 'e',
@@ -60,7 +60,7 @@ class FiniteAutomatonBuilder
         $nfa->exit->addTransition($nfa->entry);
         $nfa->entry->addTransition($nfa->exit);
 
-        $inspector = resolve('App\Core\Inspector');
+        $inspector = inspector();
         $inspector->updateArray('actions',
             [
                 'action' => 'rep',
@@ -78,7 +78,7 @@ class FiniteAutomatonBuilder
         $second->exit->setFinal();
         $first->exit->addTransition($second->entry);
 
-        $inspector = resolve('App\Core\Inspector');
+        $inspector = inspector();
         $inspector->updateArray('actions',
             [
                 'action'     => 's',

@@ -12,7 +12,7 @@ class AlgorithmService
 
     public function __construct()
     {
-        $this->inspector = resolve('App\Core\Inspector');
+        $this->inspector = inspector(); //resolve('App\Core\Inspector');
     }
 
     public function regexToNfa($regex)
@@ -20,7 +20,7 @@ class AlgorithmService
         $result = FiniteAutomaton::fromRegex(new PlainRegex($regex));
         return [
             'regex_tree'              => $result['regex_tree'],
-            'regex_tree_to_nfa_steps' => $this->inspector->getState()['actions'],
+            'regex_tree_to_nfa_steps' => $this->inspector->getState('actions'),
             'nfa'                     => $result['nfa']
         ];
     }
@@ -28,6 +28,9 @@ class AlgorithmService
     public function nfaToDfa($nfa)
     {
         $result = FiniteAutomaton::fromArray($nfa)->toDfa();
-        return $result;
+        return [
+            'breakpoints' => $this->inspector->getState('breakpoints'),
+            'dfa'         => $result
+        ];
     }
 }

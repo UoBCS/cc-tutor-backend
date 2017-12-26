@@ -143,6 +143,7 @@ class FiniteAutomaton implements JsonSerializable
 
     public function toDfa()
     {
+        DfaConverter::init();
         return DfaConverter::toDfa($this->initial);
     }
 

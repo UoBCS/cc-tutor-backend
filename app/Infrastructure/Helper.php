@@ -49,3 +49,13 @@ function endsWith($haystack, $needle)
 {
     return $needle === '' || substr_compare($haystack, $needle, -strlen($needle)) === 0;
 }
+
+function inspector()
+{
+    return resolve('App\Core\Inspector');
+}
+
+function peek($arr)
+{
+    return count($arr) - 1 < 0 ? null : $arr[count($arr) - 1];
+}
