@@ -75,7 +75,7 @@ class State implements JsonSerializable
             'id' => $this->id,
             'data' => $this->data,
             'final' => $this->isFinal
-        ];//$this->isFinal ? "||$this->id||" : $this->id . '';
+        ];
     }
 
     public function __toString()

@@ -41,9 +41,13 @@ class DfaConverter
 
             $possibleInputs = self::getPossibleInputs($dfaState);
 
-            /* > */ self::$inspector->breakpoint('possible_inputs', $possibleInputs, __FUNCTION__);
+            /* > */ self::$inspector->breakpoint('possible_inputs', [
+                'possible_inputs'    => $possibleInputs['chars'],
+                'transitions'        => $possibleInputs['transitions'],
+                'dfa_state_contents' => array_map(function ($s) { return $s->getId(); }, $dfaState->getStates()->toArray())
+            ], __FUNCTION__);
 
-            foreach ($possibleInputs as $c) {
+            foreach ($possibleInputs['chars'] as $c) {
                 /* > */ self::$inspector->stepInto('moveSet', __FUNCTION__);
                 $moveResult = self::moveSet($dfaState->getStates(), $c);
                 /* > */ self::$inspector->stepOut();
@@ -124,16 +128,25 @@ class DfaConverter
     private static function getPossibleInputs(DFAState $state)
     {
         $chars = new Set();
+        $transitions = [];
 
         foreach ($state->getStates() as $s) {
             foreach ($s->getConnectedStates() as $c => $states) {
                 if ($c !== 'ε') {
                     $chars->add($c);
+                    $transitions[] = [
+                        'src'  => $s,
+                        'char' => $c,
+                        'dest' => $states
+                    ];
                 }
             }
         }
 
-        return $chars;
+        return [
+            'chars'       => $chars,
+            'transitions' => $transitions
+        ];
     }
 
     private static function unmarked(Map $dStates)
