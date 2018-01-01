@@ -10,11 +10,19 @@ class FiniteAutomatonBuilder
 {
     public $entry;
     public $exit;
+    private static $inspector;
 
     public function __construct(State $entry, State $exit)
     {
         $this->entry = $entry;
         $this->exit = $exit;
+    }
+
+    public static function init()
+    {
+        self::$inspector = inspector();
+        self::$inspector->createStore('breakpoints', 'array');
+        self::$inspector->setRootFn('fromRegexTree');
     }
 
     public static function c(string $c)
@@ -24,13 +32,12 @@ class FiniteAutomatonBuilder
         $exit->setFinal();
         $entry->addTransition($exit, [$c]);
 
-        $inspector = inspector();
-        $inspector->updateArray('actions', [
-            'action'     => 'c',
-            'entry'      => $entry,
-            'transition' => $c,
-            'exit'       => $exit
-        ]);
+        //$inspector = inspector();
+        /* > */ self::$inspector->breakpoint('c', [
+        /* > */    'entry'      => $entry,
+        /* > */    'transition' => $c,
+        /* > */    'exit'       => $exit
+        /* > */ ], 'fromRegexTree');
 
         return new FiniteAutomatonBuilder($entry, $exit);
     }
@@ -42,15 +49,12 @@ class FiniteAutomatonBuilder
         $entry->addTransition($exit);
         $exit->setFinal();
 
-        $inspector = inspector();
-        $inspector->updateArray('actions',
-            [
-                'action'     => 'e',
-                'entry'      => $entry,
-                'transition' => 'ε',
-                'exit'       => $exit
-            ]
-        );
+        //$inspector = inspector();
+        /* > */ self::$inspector->breakpoint('e', [
+        /* > */    'entry'      => $entry,
+        /* > */    'transition' => 'ε',
+        /* > */    'exit'       => $exit
+        /* > */ ], 'fromRegexTree');
 
         return new FiniteAutomatonBuilder($entry, $exit);
     }
@@ -60,14 +64,11 @@ class FiniteAutomatonBuilder
         $nfa->exit->addTransition($nfa->entry);
         $nfa->entry->addTransition($nfa->exit);
 
-        $inspector = inspector();
-        $inspector->updateArray('actions',
-            [
-                'action' => 'rep',
-                'state1' => $nfa->entry,
-                'state2' => $nfa->exit
-            ]
-        );
+        //$inspector = inspector();
+        /* > */ self::$inspector->breakpoint('rep', [
+        /* > */    'state1' => $nfa->entry,
+        /* > */    'state2' => $nfa->exit
+        /* > */ ], 'fromRegexTree');
 
         return $nfa;
     }
@@ -78,15 +79,12 @@ class FiniteAutomatonBuilder
         $second->exit->setFinal();
         $first->exit->addTransition($second->entry);
 
-        $inspector = inspector();
-        $inspector->updateArray('actions',
-            [
-                'action'     => 's',
-                'entry'      => $first->exit,
-                'transition' => 'ε',
-                'exit'       => $second->entry
-            ]
-        );
+        //$inspector = inspector();
+        /* > */ self::$inspector->breakpoint('s', [
+        /* > */    'entry'      => $first->exit,
+        /* > */    'transition' => 'ε',
+        /* > */    'exit'       => $second->entry
+        /* > */ ], 'fromRegexTree');
 
         return new FiniteAutomatonBuilder($first->entry, $second->exit);
     }

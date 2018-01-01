@@ -25,9 +25,9 @@ class DfaConverter
 
         self::epsilonClosure($epsilonReachableStates, $initial);
         /* > */ self::$inspector->breakpoint('initial_state_epsilon_closure', [
-            'initial'          => $initial,
-            'reachable_states' => $epsilonReachableStates
-        ], __FUNCTION__);
+        /* > */    'initial'          => $initial,
+        /* > */    'reachable_states' => $epsilonReachableStates
+        /* > */ ], __FUNCTION__);
 
         $initialDfaState = new DfaState($epsilonReachableStates);
         /* > */ self::$inspector->breakpoint('initial_dfa_state', $initialDfaState, __FUNCTION__);
@@ -42,10 +42,10 @@ class DfaConverter
             $possibleInputs = self::getPossibleInputs($dfaState);
 
             /* > */ self::$inspector->breakpoint('possible_inputs', [
-                'possible_inputs'    => $possibleInputs['chars'],
-                'transitions'        => $possibleInputs['transitions'],
-                'dfa_state_contents' => array_map(function ($s) { return $s->getId(); }, $dfaState->getStates()->toArray())
-            ], __FUNCTION__);
+            /* > */    'possible_inputs'    => $possibleInputs['chars'],
+            /* > */    'transitions'        => $possibleInputs['transitions'],
+            /* > */    'dfa_state_contents' => array_map(function ($s) { return $s->getId(); }, $dfaState->getStates()->toArray())
+            /* > */ ], __FUNCTION__);
 
             foreach ($possibleInputs['chars'] as $c) {
                 /* > */ self::$inspector->stepInto('moveSet', __FUNCTION__);
@@ -54,18 +54,18 @@ class DfaConverter
 
                 $states = self::epsilonClosureSet($moveResult);
                 /* > */ self::$inspector->breakpoint('epsilon_closure', [
-                    'input'  => $moveResult,
-                    'output' => $states
-                ], __FUNCTION__);
+                /* > */    'input'  => $moveResult,
+                /* > */    'output' => $states
+                /* > */ ], __FUNCTION__);
 
                 $newDfaState = self::getOrCreate($states, $dStates);
                 $dfaState->addTransition($newDfaState, [$c]);
 
                 /* > */ self::$inspector->breakpoint('new_dfa_transition', [
-                    'src'  => $dfaState,
-                    'char' => $c,
-                    'dest' => $newDfaState
-                ], __FUNCTION__);
+                /* > */    'src'  => $dfaState,
+                /* > */    'char' => $c,
+                /* > */    'dest' => $newDfaState
+                /* > */ ], __FUNCTION__);
 
                 if (!$dStates->hasKey($newDfaState)) {
                     $dStates->put($newDfaState, false);

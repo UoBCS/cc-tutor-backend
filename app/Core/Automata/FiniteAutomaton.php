@@ -39,6 +39,7 @@ class FiniteAutomaton implements JsonSerializable
         $regexTree = $regexParser->parse();
 
         // Build NFA
+        FiniteAutomatonBuilder::init();
         $result = FiniteAutomatonBuilder::fromRegexTree($regexTree);
         $fa = $result->getFiniteAutomaton();
 

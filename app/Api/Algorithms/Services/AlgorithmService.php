@@ -12,16 +12,16 @@ class AlgorithmService
 
     public function __construct()
     {
-        $this->inspector = inspector(); //resolve('App\Core\Inspector');
+        $this->inspector = inspector();
     }
 
     public function regexToNfa($regex)
     {
         $result = FiniteAutomaton::fromRegex(new PlainRegex($regex));
         return [
-            'regex_tree'              => $result['regex_tree'],
-            'regex_tree_to_nfa_steps' => $this->inspector->getState('actions'),
-            'nfa'                     => $result['nfa']
+            'breakpoints' => $this->inspector->getState('breakpoints'),
+            'nfa'         => $result['nfa'],
+            'regex_tree'  => $result['regex_tree'],
         ];
     }
 

@@ -7,48 +7,6 @@ class Inspector
     const GENERAL = 0;
     const CALL = 1;
 
-    /*
-        breakpoints: [
-            {
-                fname: ...
-                label: ...,
-                data: ...
-            },
-            ...
-            {
-                fname: ...,
-                label: CALL->...,
-                data: {
-                    begin: 2,
-                    end: 5
-                }
-            },
-            ...
-
-        ]
-    */
-
-    // record breakpoint if calling fn is same as current and stepping into
-
-    /* inspection_data:
-        breakpoints: [
-            {
-                name: ...,
-                data: ...
-            },
-
-            {
-                name: CALL->fname1,
-                data: [
-                    {
-                        name: ...,
-                        data: ...
-                    }
-                ]
-            }
-        ]
-    */
-
     private $state = [];
     private $currentBreakpointsScope = ['breakpoints'];
     private $currentIndexStack = [0];
@@ -56,7 +14,7 @@ class Inspector
 
     public function createStore($store, $type, $object = false)
     {
-        $state[$store] = $object ? new $type() : $type === 'array' ? array() : call_user_func($type);
+        $this->state[$store] = $object ? new $type() : $type === 'array' ? array() : call_user_func($type);
     }
 
     public function setRootFn($rootFn)
@@ -109,6 +67,8 @@ class Inspector
             'type'  => $type,
             'data'  => $data
         ]);
+
+        //var_dump($this->state['breakpoints']);
 
         if ($type === Inspector::CALL) {
             $this->currentIndexStack[] = 0;
