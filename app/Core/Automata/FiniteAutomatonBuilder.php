@@ -32,7 +32,6 @@ class FiniteAutomatonBuilder
         $exit->setFinal();
         $entry->addTransition($exit, [$c]);
 
-        //$inspector = inspector();
         /* > */ self::$inspector->breakpoint('c', [
         /* > */    'entry'      => $entry,
         /* > */    'transition' => $c,
@@ -49,7 +48,6 @@ class FiniteAutomatonBuilder
         $entry->addTransition($exit);
         $exit->setFinal();
 
-        //$inspector = inspector();
         /* > */ self::$inspector->breakpoint('e', [
         /* > */    'entry'      => $entry,
         /* > */    'transition' => 'ε',
@@ -64,7 +62,6 @@ class FiniteAutomatonBuilder
         $nfa->exit->addTransition($nfa->entry);
         $nfa->entry->addTransition($nfa->exit);
 
-        //$inspector = inspector();
         /* > */ self::$inspector->breakpoint('rep', [
         /* > */    'state1' => $nfa->entry,
         /* > */    'state2' => $nfa->exit
@@ -79,7 +76,6 @@ class FiniteAutomatonBuilder
         $second->exit->setFinal();
         $first->exit->addTransition($second->entry);
 
-        //$inspector = inspector();
         /* > */ self::$inspector->breakpoint('s', [
         /* > */    'entry'      => $first->exit,
         /* > */    'transition' => 'ε',
@@ -101,13 +97,23 @@ class FiniteAutomatonBuilder
         $choice1->exit->addTransition($exit);
         $choice2->exit->addTransition($exit);
 
-        /*$this->collect(
-            [
-                'entry'      => serialize($entry),
-                'transition' => 'ε',
-                'exit'       => serialize($exit)
-            ]
-        );*/
+        /* > */ self::$inspector->breakpoint('or1', [
+        /* > */    'entry' => $entry
+        /* > */ ], 'fromRegexTree');
+
+        /* > */ self::$inspector->breakpoint('or2', [
+        /* > */    'entry'   => $entry,
+        /* > */    'choices' => [$choice1->entry, $choice2->entry]
+        /* > */ ], 'fromRegexTree');
+
+        /* > */ self::$inspector->breakpoint('or3', [
+        /* > */    'exit' => $exit
+        /* > */ ], 'fromRegexTree');
+
+        /* > */ self::$inspector->breakpoint('or4', [
+        /* > */    'exit'    => $exit,
+        /* > */    'choices' => [$choice1->exit, $choice2->exit]
+        /* > */ ], 'fromRegexTree');
 
         return new FiniteAutomatonBuilder($entry, $exit);
     }
