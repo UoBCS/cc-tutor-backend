@@ -78,17 +78,17 @@ class RegexParser
         while ($this->more() && ($this->peek() === '*' || $this->peek() === '+' || $this->peek() === '?')) {
             switch ($this->peek()) {
                 case '*':
-                    eat('*');
+                    $this->eat('*');
                     $base = new TreeTypes\Repetition($base);
                 break;
 
                 case '+':
-                    eat('+');
+                    $this->eat('+');
                     $base = new TreeTypes\RepetitionFromOne($base);
                 break;
 
                 default:
-                    eat('?');
+                    $this->eat('?');
                     $base = new TreeTypes\Optional($base);
                 break;
             }
@@ -112,9 +112,9 @@ class RegexParser
     {
         switch ($this->peek()) {
         case '(':
-            eat('(');
+            $this->eat('(');
             $r = regex();
-            eat(')');
+            $this->eat(')');
             return $r;
 
         case '\\':
