@@ -113,7 +113,7 @@ class RegexParser
         switch ($this->peek()) {
         case '(':
             $this->eat('(');
-            $r = regex();
+            $r = $this->regex();
             $this->eat(')');
             return $r;
 
