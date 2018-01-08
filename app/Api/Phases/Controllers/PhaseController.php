@@ -2,6 +2,7 @@
 
 namespace App\Api\Phases\Controllers;
 
+use App\Api\Phases\Requests\LexicalAnalysisRequest;
 use App\Api\Phases\Services\PhaseService;
 use App\Infrastructure\Http\Controller;
 use Illuminate\Http\Request;
@@ -29,8 +30,10 @@ class PhaseController extends Controller
         );
     }
 
-    public function lexicalAnalysis()
+    public function lexicalAnalysis(LexicalAnalysisRequest $request)
     {
-
+        return $this->response(
+            $this->service->lexicalAnalysis($request->input('content'), $request->input('token_types'))
+        );
     }
 }

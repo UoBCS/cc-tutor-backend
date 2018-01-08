@@ -167,7 +167,7 @@ class FiniteAutomaton implements JsonSerializable
         $fn = function ($src, $c, $dest, $str) {
             $srcId = $src->getId();
             $destId = $dest->getId();
-            return $str . "($srcId, $c, $destId)\n";
+            return $str . "($src, $c, $dest)\n";
         };
 
         return $this->traverse(NULL, NULL, $fn, '', 1);

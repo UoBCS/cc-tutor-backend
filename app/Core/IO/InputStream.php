@@ -59,7 +59,7 @@ class InputStream
             }
         }
 
-        if (($this->p + $i - 1) >= n) {
+        if (($this->p + $i - 1) >= $this->n) {
             return self::EOF;
         }
 

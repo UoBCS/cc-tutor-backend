@@ -3,6 +3,7 @@
 namespace App\Core\Automata;
 
 use App\Core\Syntax\Char;
+use Ds\Set;
 use JsonSerializable;
 
 class State implements JsonSerializable
@@ -33,7 +34,7 @@ class State implements JsonSerializable
         return $this->data;
     }
 
-    public function setData(array $data)
+    public function setData($data)
     {
         $this->data = $data;
     }
@@ -66,7 +67,35 @@ class State implements JsonSerializable
 
     public function getState(string $c)
     {
-        return isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
+        if ($c === '[ANY]') {
+            $set = new Set(array_flatten($this->connectedStates));
+            return $set->toArray();
+        }
+
+        $outStates = new Set();
+
+        foreach ($this->connectedStates as $char => $states) {
+            if ($char === $c) {
+                $outStates = $outStates->merge($states);
+            }
+
+            if ($char === '[ANY]') {
+                $outStates = $outStates->merge($states);
+            }
+
+            if (preg_match('/^\[(.)\-(.)\]$/', $char, $matches) === 1) {
+                if (preg_match('/^\[(.)\-(.)\]$/', $c, $matchesC) === 1) {
+                    if (ord($matchesC[1]) >= ord($matches[1]) && ord($matchesC[2]) <= ord($matches[2])) {
+                        $outStates = $outStates->merge($states);
+                    }
+                }
+                else if (ord($c) >= ord($matches[1]) && ord($c) <= ord($matches[2])) {
+                    $outStates = $outStates->merge($states);
+                }
+            }
+        }
+
+        return $outStates->toArray(); //isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
     }
 
     public function jsonSerialize()
@@ -85,10 +114,18 @@ class State implements JsonSerializable
 
     private function _addTransition(self $state, string $c)
     {
-        $states = isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
-        if (!in_array($state, $states) || $c === '[ANY]' || preg_match($c, '^\[.-.\]$') === 1) {
-            $states[] = $state;
-            $this->connectedStates[$c] = $states;
-        }
+        /*for (Char c : cs) {
+            Transition transition = new Transition(state, c);
+            int i = transitions.indexOf(transition);
+            if (i == -1) { // !transitions.contains(transition)
+                transitions.add(transition);
+            } else if (c.any || c instanceof  RangeChar) {
+                transitions.get(i).setChar(c); // Update for inclusiveness
+            }
+        }*/
+
+        $states = new Set(isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : []);
+        $states->add($state);
+        $this->connectedStates[$c] = $states->toArray();
     }
 }

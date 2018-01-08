@@ -50,9 +50,7 @@ class Lexer
 
             $finalStates = new Stack();
             $S = new Stack();
-            //Stack<Triplet<State, String, Triplet<Integer, Integer, Integer>>> finalStates = new Stack<>();
-            //Stack<State> S = new Stack<>();
-            $S->push($dfa->getInitial());
+            $S->push($this->dfa->getInitial());
 
             while (!$S->isEmpty()) {
                 $s = $S->pop();
@@ -65,11 +63,6 @@ class Lexer
                         'column' => $this->tokenColumn,
                         'index' => $this->input->index()
                     ]);
-                    /*finalStates.push(new Triplet<>(s, text.toString(), new Triplet<>(
-                            tokenLine,
-                            tokenColumn,
-                            input.index()))
-                    );*/
                 }
 
                 $this->consumeChar();
@@ -78,7 +71,7 @@ class Lexer
                     break;
                 }
 
-                $neighbours = $s->getState($this->lasChar); // new Char((char) lastChar)
+                $neighbours = $s->getState($this->lastChar);
 
                 if (count($neighbours) !== 0) {
                     $text .= $this->lastChar;
@@ -92,7 +85,6 @@ class Lexer
 
             // Get longest match
             $chosenState = $finalStates->pop();
-            //Triplet<State, String, Triplet<Integer, Integer, Integer>> chosenState = finalStates.pop();
 
             // Update tokenLine tokenColumn and seek head
             $this->tokenLine = $chosenState['line'];
@@ -108,10 +100,6 @@ class Lexer
                 $tokenType = $data[0];
 
                 for ($i = 1; $i < count($data); $i++) {
-                    /*if (((TokenType) stateData.get(i)).priority < tokenType.priority) { // ordinal()
-                        tokenType = (TokenType) stateData.get(i);
-                    }*/
-
                     if ($data[$i]->priority < $tokenType->priority) {
                         $tokenType = $data[$i];
                     }
@@ -124,9 +112,9 @@ class Lexer
             } else {
                 // throw exception
             }
-        } while ($skipF && $currentToken->getType()->skippable);
+        } while ($skipF && $this->currentToken->getType()->skippable);
 
-        return $currentToken;
+        return $this->currentToken;
     }
 
     public function getCurrentToken()
@@ -139,7 +127,7 @@ class Lexer
         return $this->input;
     }
 
-    public function buildDFA()
+    public function buildDfa()
     {
         //JavaTokenType[] tokens = JavaTokenType.values();
 
@@ -147,7 +135,7 @@ class Lexer
         $nfas = [];
 
         foreach ($this->tokenTypes as $tokenType) {
-            $nfas[] = FiniteAutomaton::fromRegex($tokenType);
+            $nfas[] = FiniteAutomaton::fromRegex($tokenType)['nfa'];
         }
 
         // Combine NFAs to single NFA

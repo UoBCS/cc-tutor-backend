@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Core\Syntax\Token;
+use JsonSerializable;
 
-class Token
+class Token implements JsonSerializable
 {
     private $type;
     private $line;
@@ -10,7 +11,7 @@ class Token
     private $isEOF = false;
     private $text;
 
-    public function __construct(TokenType $type)
+    public function __construct(TokenType $type = null)
     {
         $this->type = $type;
     }
@@ -67,6 +68,17 @@ class Token
     public function isEOF()
     {
         return $this->isEOF;
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'type'   => $this->type,
+            'line'   => $this->line,
+            'column' => $this->column,
+            'isEOF'  => $this->isEOF,
+            'text'   => $this->text
+        ];
     }
 
     public function __toString()
