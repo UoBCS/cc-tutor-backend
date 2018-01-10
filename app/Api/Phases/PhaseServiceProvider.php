@@ -2,12 +2,19 @@
 
 namespace App\Api\Phases;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
-class PhaseServiceProvider extends ServiceProvider
+class PhaseServiceProvider extends EventServiceProvider
 {
-    public function register()
-    {
-        //
-    }
+    protected $listen = [
+        Events\LLRunWasCreated::class => [
+            Listeners\CommitTransaction::class,
+        ],
+        Events\LLRunWasDeleted::class => [
+            Listeners\CommitTransaction::class,
+        ],
+        Events\LLRunWasUpdated::class => [
+            Listeners\CommitTransaction::class,
+        ]
+    ];
 }

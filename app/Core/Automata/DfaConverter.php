@@ -9,17 +9,18 @@ use Ds\Stack;
 class DfaConverter
 {
     private static $inspector;
+    private static $rootFn = 'toDfa';
 
     public static function init()
     {
         self::$inspector = inspector();
         self::$inspector->createStore('breakpoints', 'array');
-        self::$inspector->setRootFn('toDfa');
+        self::$inspector->setRootFn(self::$rootFn);
     }
 
     public static function toDfa(State $initial)
     {
-        /* > */ self::$inspector->breakpoint('highlight_initial_nfa_state', [ 'state' => $initial ], __FUNCTION__);
+        /* > */ self::$inspector->breakpoint('highlight_initial_nfa_state', [ 'state' => $initial ], self::$rootFn);
 
         $epsilonReachableStates = new Set();
 
@@ -27,10 +28,10 @@ class DfaConverter
         /* > */ self::$inspector->breakpoint('initial_state_epsilon_closure', [
         /* > */    'initial'          => $initial,
         /* > */    'reachable_states' => $epsilonReachableStates
-        /* > */ ], __FUNCTION__);
+        /* > */ ], self::$rootFn);
 
         $initialDfaState = new DfaState($epsilonReachableStates);
-        /* > */ self::$inspector->breakpoint('initial_dfa_state', $initialDfaState, __FUNCTION__);
+        /* > */ self::$inspector->breakpoint('initial_dfa_state', $initialDfaState, self::$rootFn);
 
         $dStates = new Map();
 
@@ -45,18 +46,18 @@ class DfaConverter
             /* > */    'possible_inputs'    => $possibleInputs['chars'],
             /* > */    'transitions'        => $possibleInputs['transitions'],
             /* > */    'dfa_state_contents' => array_map(function ($s) { return $s->getId(); }, $dfaState->getStates()->toArray())
-            /* > */ ], __FUNCTION__);
+            /* > */ ], self::$rootFn);
 
             foreach ($possibleInputs['chars'] as $c) {
-                /* > */ self::$inspector->stepInto('moveSet', __FUNCTION__);
+                ///* > */ self::$inspector->stepInto('moveSet', __FUNCTION__);
                 $moveResult = self::moveSet($dfaState->getStates(), $c);
-                /* > */ self::$inspector->stepOut();
+                ///* > */ self::$inspector->stepOut();
 
                 $states = self::epsilonClosureSet($moveResult);
                 /* > */ self::$inspector->breakpoint('epsilon_closure', [
                 /* > */    'input'  => $moveResult,
                 /* > */    'output' => $states
-                /* > */ ], __FUNCTION__);
+                /* > */ ], self::$rootFn);
 
                 $newDfaState = self::getOrCreate($states, $dStates);
                 $dfaState->addTransition($newDfaState, [$c]);
@@ -65,7 +66,7 @@ class DfaConverter
                 /* > */    'src'  => $dfaState,
                 /* > */    'char' => $c,
                 /* > */    'dest' => $newDfaState
-                /* > */ ], __FUNCTION__);
+                /* > */ ], self::$rootFn);
 
                 if (!$dStates->hasKey($newDfaState)) {
                     $dStates->put($newDfaState, false);
@@ -206,7 +207,7 @@ class DfaConverter
         /* > */    'state'            => $s,
         /* > */    'char'             => $a,
         /* > */    'connected_states' => $states
-        /* > */ ], __FUNCTION__);
+        /* > */ ], self::$rootFn);
 
         return $states;
     }
@@ -216,9 +217,9 @@ class DfaConverter
         $result = new Set();
 
         foreach ($T as $s) {
-            /* > */ self::$inspector->stepInto('move', __FUNCTION__);
+            ///* > */ self::$inspector->stepInto('move', __FUNCTION__);
             $result = $result->merge(self::move($s, $a)->toArray());
-            /* > */ self::$inspector->stepOut();
+            ///* > */ self::$inspector->stepOut();
         }
 
         return $result;

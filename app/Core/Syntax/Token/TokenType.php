@@ -3,10 +3,11 @@
 namespace App\Core\Syntax\Token;
 
 use App\Core\Syntax\Regex\IRegex;
+use Ds\Hashable;
 use Ds\Set;
 use JsonSerializable;
 
-class TokenType implements IRegex, JsonSerializable
+class TokenType implements IRegex, JsonSerializable, Hashable
 {
     public $name;
     public $regex;
@@ -54,6 +55,19 @@ class TokenType implements IRegex, JsonSerializable
             'skippable' => $this->skippable,
             'priority' => $this->priority
         ];
+    }
+
+    public function equals($obj)
+    {
+        return $this->name === $obj->name
+            && $this->regex === $obj->regex
+            && $this->skippable === $obj->skippable
+            && $this->priority === $obj->priority;
+    }
+
+    public function hash()
+    {
+        return $this->name . '|' . $this->regex . '|' . $this->skippable . '|' . $this->priority;
     }
 
     public function __toString()
