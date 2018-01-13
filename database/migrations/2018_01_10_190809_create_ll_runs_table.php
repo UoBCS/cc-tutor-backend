@@ -15,6 +15,11 @@ class CreateLlRunsTable extends Migration
     {
         Schema::create('ll_runs', function (Blueprint $table) {
             $table->increments('id');
+            $table->longText('content');
+            $table->json('token_types');
+            $table->json('grammar');
+            $table->json('stack');
+            $table->integer('input_index')->default(0);
             $table->timestamps();
         });
     }

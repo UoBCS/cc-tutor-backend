@@ -1,8 +1,10 @@
 <?php
 
-Route::get('/', 'PhaseController@index');
-
-Route::post('/lexical-analysis', 'PhaseController@lexicalAnalysis');
+Route::post('/lexical-analysis', 'LexicalAnalysisController@run');
 Route::prefix('syntax-analysis')->group(function () {
-    //Route::
+    Route::prefix('ll')->group(function() {
+        Route::post('/init-parser', 'LLRunController@create');
+        Route::post('/predict', 'LLRunController@predict');
+        Route::post('/match', 'LLRunController@match');
+    });
 });

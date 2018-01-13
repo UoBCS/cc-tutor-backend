@@ -57,7 +57,7 @@ class TokenType implements IRegex, JsonSerializable, Hashable
         ];
     }
 
-    public function equals($obj)
+    public function equals($obj) : bool
     {
         return $this->name === $obj->name
             && $this->regex === $obj->regex

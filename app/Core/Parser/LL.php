@@ -3,12 +3,14 @@
 namespace App\Core\Parser;
 
 use App\Core\Exceptions\ParserException;
+use App\Core\IO\InputStream;
 use App\Core\IO\ConsumableInput;
 use App\Core\Lexer\Lexer;
 use App\Core\Syntax\Grammar\Grammar;
 use App\Core\Syntax\Grammar\NonTerminal;
 use App\Core\Syntax\Grammar\Terminal;
 use App\Core\Syntax\Token\TokenType;
+use Ds\Set;
 use Ds\Stack;
 use Ds\Vector;
 use JsonSerializable;
@@ -20,19 +22,85 @@ class LL implements JsonSerializable
     private $lexer;
     private $grammar;
 
-    public function __construct(Lexer $lexer, array $grammar)
+    public function __construct(Lexer $lexer = null, array $grammar = [])
     {
         $this->stack = new Stack();
-        $this->lexer = lexer;
-        $this->input = new ConsumableInput($this->lexer->getTokens());
+        $this->lexer = $lexer;
+        $this->input = is_null($lexer) ? new ConsumableInput() : new ConsumableInput($this->lexer->getTokens());
         $this->grammar = new Grammar();
 
         // Setup grammar object
-        $terminals = array_map(function (TokenType $tokenType) {
-            return new Terminal($tokenType);
-        }, $this->lexer->getTokenTypes());
-        $this->grammar->setTerminals(new Set($terminals));
-        $this->grammar->setProductionsFromData($grammar);
+        if (!is_null($lexer) && count($grammar) > 0) {
+            $terminals = array_map(function (TokenType $tokenType) {
+                return new Terminal($tokenType);
+            }, $this->lexer->getTokenTypes()->toArray());
+            $this->grammar->setTerminals(new Set($terminals));
+            $this->grammar->setFromData($grammar);
+
+            $this->stack->push($this->grammar->getStartSymbol());
+        }
+    }
+
+    public static function fromData(array $data) : LL
+    {
+        $lexer = new Lexer(new InputStream($data['content']), TokenType::fromDataArray($data['tokenTypes']));
+        $parser = new LL($lexer, $data['grammar']);
+        $parser->setInputIndex($data['inputIndex']);
+        if (!is_null($data['stack'])) {
+            $parser->setStackFromData($data['stack']);
+        }
+
+        return $parser;
+    }
+
+    public function getInput() : ConsumableInput
+    {
+        return $this->input;
+    }
+
+    public function setInput(ConsumableInput $input)
+    {
+        $this->input = $input;
+    }
+
+    public function setInputIndex(int $index)
+    {
+        $this->input->setIndex($index);
+    }
+
+    public function getStack() : Stack
+    {
+        return $this->stack;
+    }
+
+    public function setStack(Stack $stack)
+    {
+        $this->stack = $stack;
+    }
+
+    public function setStackFromData($data)
+    {
+        $this->stack = new Stack();
+        $tokenTypes = $this->lexer->getTokenTypes();
+
+        for ($i = count($data) - 1; $i >= 0; $i--) {
+            $gEntity = $data[$i];
+
+            if (isset($gEntity['regex'])) {
+                $tokenType = $this->lexer->getTokenTypeByName($gEntity['name']);
+
+                if (!is_null($tokenType)) {
+                    $this->stack->push(new Terminal($tokenType));
+                }
+            } else {
+                $this->stack->push(new NonTerminal($gEntity));
+            }
+        }
+    }
+
+    public function getGrammar()
+    {
+        return $this->grammar;
     }
 
     public function predict(NonTerminal $lhs, Vector $rhs)
@@ -43,12 +111,16 @@ class LL implements JsonSerializable
             } else {
                 $tokens = array_map(function ($token) {
                     return $token->getType()->name;
-                }, $input->getRemaining());
+                }, $this->input->getRemaining());
 
                 $tokensStr = implode(' ', $tokens);
 
                 throw new ParserException("Unexpected input $tokensStr at the end.");
             }
+        }
+
+        if (!$this->grammar->hasProduction($lhs, $rhs)) {
+            throw new ParserException('The supplied production has not been found.');
         }
 
         if (!$this->stack->peek()->equals($lhs)) {
@@ -57,7 +129,7 @@ class LL implements JsonSerializable
 
         $this->stack->pop();
 
-        for ($i = $rhs->count() - 1; $i >= 0; $i++) {
+        for ($i = $rhs->count() - 1; $i >= 0; $i--) {
             $this->stack->push($rhs[$i]);
         }
     }
@@ -72,7 +144,7 @@ class LL implements JsonSerializable
             }
         }
 
-        $inputTerminal = new Terminal($this->input->read()->getTokenType());
+        $inputTerminal = new Terminal($this->input->read()->getType());
 
         if (!$this->stack->peek()->isTerminal()) {
             throw new ParserException('Could not match a terminal with a non-terminal.');

@@ -7,7 +7,7 @@ use App\Core\IO\InputStream;
 use App\Core\Lexer\Lexer;
 use App\Core\Syntax\Token\TokenType;
 
-class PhaseService
+class LexicalAnalysisService
 {
     private $inspector;
 
@@ -17,7 +17,7 @@ class PhaseService
         //$this->inspector->getState('breakpoints')
     }
 
-    public function lexicalAnalysis(string $content, array $tokenTypes)
+    public function run(string $content, array $tokenTypes)
     {
         $lexer = new Lexer(new InputStream($content), TokenType::fromDataArray($tokenTypes));
         return $lexer->getTokens();

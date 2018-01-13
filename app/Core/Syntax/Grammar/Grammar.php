@@ -25,52 +25,52 @@ class Grammar implements JsonSerializable
 
     public function hasProduction(NonTerminal $lhs, Vector $rhs) : bool
     {
-        return false;
-        /*if ($this->productions->get($lhs) === null) {
+        if ($this->productions->get($lhs, null) === null) {
             return false;
         }
 
-        $found = false;
-        $rhsItem1 = $rhs->sorted(function ($a, $b) {
-            return 1;
-        });
+        $rhsCount = $rhs->count();
 
-        foreach ($productions->get($lhs, []) as $rhsV) {
-            foreach ($rhsV as $rhsItem2) {
-                if ($rhsItem1->count() !== $rhsItem2->count()) {
-                    continue;
-                }
+        foreach ($this->productions->get($lhs) as $rhs1) {
+            if ($rhsCount !== $rhs1->count()) {
+                continue;
+            }
 
-                $rhsItem2->sorted(function ($a, $b) {
-                    return 1;
-                });
-
-                foreach ($rhsItem1 as $index => $r) {
-                    if (!$r.equals()) {
-                        $found = true;
-                        break;
-                    }
-                }
-
-                if ($found) {
+            $found = true;
+            var_dump($rhs);
+            var_dump($rhs1);
+            for ($i = 0; $i < $rhsCount; $i++) {
+                if (!$rhs[$i]->equals($rhs1[$i])) {
+                    $found = false;
                     break;
                 }
             }
 
             if ($found) {
-                break;
+                return true;
             }
         }
 
-        //List<List<GrammarEntity>> prods = productions.get(lhs);
-        return $found;*/
+        return false;
     }
 
-    public function setProductionsFromData(array $data)
+    public function setFromData(array $data)
     {
-        foreach ($data as $lhs => $rhs) {
-            $this->productions->put($lhs, new Vector(array_map(function ($r) { return new Vector($r); }, $rhs)));
+        $this->productions = new Map();
+
+        $nonTerminals = array_map(function ($r) { return new NonTerminal($r); }, array_keys($data['productions']));
+
+        foreach ($nonTerminals as $nt) {
+            $this->productions->put($nt, null);
         }
+
+        foreach ($data['productions'] as $lhs => $rhs) {
+            $this->productions->put(new NonTerminal($lhs), new Vector(array_map(function ($r) {
+                return new Vector(array_map([$this, 'getGrammarEntityByName'], $r));
+            }, $rhs)));
+        }
+
+        $this->startSymbol = new NonTerminal($data['start_symbol']);
     }
 
     public function getStartSymbol() : NonTerminal
@@ -85,7 +85,11 @@ class Grammar implements JsonSerializable
 
     public function getNonTerminals() : Set
     {
-        return $this->productions->keys();
+        $nts = array_map(function ($nt) {
+            return new NonTerminal($nt);
+        }, $this->productions->keys()->toArray());
+
+        return new Set($nts);
     }
 
     public function getTerminals() : Set
@@ -115,10 +119,36 @@ class Grammar implements JsonSerializable
         $this->terminals = $terminals;
     }
 
+    public function getGrammarEntityByName(string $name)
+    {
+        $ts = $this->terminals;
+        $nts = $this->getNonTerminals();
+
+        foreach ($ts as $t) {
+            if ($name === $t->getTokenType()->name) {
+                return $t;
+            }
+        }
+
+        foreach ($nts as $nt) {
+            if ($name === $nt->getName()) {
+                return $nt;
+            }
+        }
+
+        return null;
+    }
+
     public function jsonSerialize()
     {
+        $productions = [];
+
+        foreach ($this->productions as $key => $value) {
+            $productions[$key->getName()] = $value;
+        }
+
         return [
-            'productions' => $this->productions,
+            'productions' => $productions,
             'terminals'   => $this->terminals,
             'startSymbol' => $this->startSymbol
         ];

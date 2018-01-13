@@ -10,10 +10,20 @@ class ConsumableInput implements JsonSerializable
     private $input;
     private $index;
 
-    public function __construct($input = null)
+    public function __construct($input = [], $index = 0)
     {
         $this->input = $input;
-        $this->index = 0;
+        $this->index = $index;
+    }
+
+    public function getIndex() : int
+    {
+        return $this->index;
+    }
+
+    public function setIndex(int $index)
+    {
+        $this->index = $index;
     }
 
     public function hasFinished() : bool
@@ -39,7 +49,7 @@ class ConsumableInput implements JsonSerializable
         return $this->input[$this->index++];
     }
 
-    public function getRemaining()
+    public function getRemaining() : array
     {
         if ($this->hasFinished()) {
             throw new Exception('Cannot advance input.');

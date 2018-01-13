@@ -32,6 +32,17 @@ class Lexer
         return $this->tokenTypes;
     }
 
+    public function getTokenTypeByName(string $name)
+    {
+        foreach ($this->tokenTypes as $tokenType) {
+            if ($tokenType->name === $name) {
+                return $tokenType;
+            }
+        }
+
+        return null;
+    }
+
     public function nextToken(bool $skipF = true): Token
     {
         do {
