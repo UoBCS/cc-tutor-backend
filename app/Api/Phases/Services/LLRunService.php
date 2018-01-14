@@ -28,13 +28,9 @@ class LLRunService extends Service
         'resourceNotFound'      => Exceptions\LLRunNotFoundException::class
     ];
 
-    private $inspector;
-
     public function __construct(LLRunRepository $repository)
     {
         $this->repository = $repository;
-        $this->inspector = inspector();
-        //$this->inspector->getState('breakpoints')
     }
 
     public function initialize(array $data) : array

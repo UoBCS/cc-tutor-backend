@@ -88,6 +88,9 @@ return [
     'uploaded'             => 'The :attribute failed to upload.',
     'url'                  => 'The :attribute format is invalid.',
 
+    'token_types' => 'The :attribute is not correctly formatted.',
+    'grammar'     => 'The :attribute is not correctly formatted.',
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

@@ -65,7 +65,7 @@ class Grammar implements JsonSerializable
 
         foreach ($data['productions'] as $lhs => $rhs) {
             $this->productions->put(new NonTerminal($lhs), new Vector(array_map(function ($r) {
-                return new Vector(array_map([$this, 'getGrammarEntityByName'], $r));
+                return $r === null ? null : new Vector(array_map([$this, 'getGrammarEntityByName'], $r));
             }, $rhs)));
         }
 
@@ -118,13 +118,15 @@ class Grammar implements JsonSerializable
         $this->terminals = $terminals;
     }
 
-    public function getGrammarEntityByName(string $name)
+    public function getGrammarEntityByName($name)
     {
         $ts = $this->terminals;
         $nts = $this->getNonTerminals();
 
         foreach ($ts as $t) {
-            if ($name === $t->getTokenType()->name) {
+            $tokenType = $t->getTokenType();
+
+            if (($name === null && $tokenType === null) || ($tokenType !== null && $name === $tokenType->name)) {
                 return $t;
             }
         }

@@ -23,7 +23,6 @@ class ParseTreeSearchVisitor implements Visitor
 
         foreach ($node->getChildren() as $child) {
             $child->accept($this);
-            //$nodes['children'][] = $child->accept($this);
         }
 
         return $this->foundNode;

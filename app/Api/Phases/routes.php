@@ -7,4 +7,8 @@ Route::prefix('syntax-analysis')->group(function () {
         Route::post('/predict', 'LLRunController@predict');
         Route::post('/match', 'LLRunController@match');
     });
+
+    Route::prefix('ll1')->group(function () {
+        Route::post('/parse', 'LL1Controller@parse');
+    });
 });

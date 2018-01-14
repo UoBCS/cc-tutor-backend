@@ -16,14 +16,8 @@ class LLRunController extends Controller
     protected $createRules = [
         'll_run'             => 'array|required',
         'll_run.content'     => 'required|string',
-        'll_run.token_types' => 'required|array',
-        'll_run.grammar'     => 'required|array'
-    ];
-
-    protected $updateRules = [
-        'content'     => 'required|string',
-        'token_types' => 'required|array',
-        'grammar'     => 'required|array'
+        'll_run.token_types' => 'required|token_types',
+        'll_run.grammar'     => 'required|grammar'
     ];
 
     public function __construct(LLRunService $service)

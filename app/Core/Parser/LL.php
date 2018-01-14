@@ -41,6 +41,8 @@ class LL implements JsonSerializable
             $terminals = array_map(function (TokenType $tokenType) {
                 return new Terminal($tokenType);
             }, $this->lexer->getTokenTypes()->toArray());
+            $terminals[] = new Terminal(); // epsilon
+
             $this->grammar->setTerminals(new Set($terminals));
             $this->grammar->setFromData($grammar);
 

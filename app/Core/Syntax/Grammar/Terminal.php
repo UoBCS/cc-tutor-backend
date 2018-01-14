@@ -20,7 +20,7 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
         return new Terminal();
     }
 
-    public function getTokenType() : TokenType
+    public function getTokenType()
     {
         return $this->tokenType;
     }
@@ -52,16 +52,18 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
 
     public function equals($obj) : bool
     {
-        return $obj instanceof Terminal ? $this->tokenType->equals($obj->tokenType) : false;
+        return $obj instanceof Terminal
+            && (($this->tokenType === null && $obj->tokenType === null)
+                || ($this->tokenType->equals($obj->tokenType)));
     }
 
     public function hash() : string
     {
-        return $this->tokenType->hash();
+        return $this->tokenType === null ? '' : $this->tokenType->hash();
     }
 
     public function jsonSerialize()
     {
-        return $this->tokenType;
+        return $this->tokenType === null ? ['name' => 'ε'] : $this->tokenType;
     }
 }
