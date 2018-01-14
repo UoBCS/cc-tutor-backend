@@ -37,8 +37,7 @@ class Grammar implements JsonSerializable
             }
 
             $found = true;
-            var_dump($rhs);
-            var_dump($rhs1);
+
             for ($i = 0; $i < $rhsCount; $i++) {
                 if (!$rhs[$i]->equals($rhs1[$i])) {
                     $found = false;

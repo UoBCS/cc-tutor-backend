@@ -19,7 +19,7 @@ class LLRun extends Model
      * @var array
      */
     protected $fillable = [
-        'content', 'token_types', 'grammar', 'stack', 'input_index'
+        'content', 'token_types', 'grammar', 'stack', 'input_index', 'parse_tree'
     ];
 
     /**

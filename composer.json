@@ -13,6 +13,7 @@
         "laravel/framework": "5.5.*",
         "laravel/passport": "^4.0",
         "laravel/tinker": "~1.0",
+        "nicmart/tree": "^0.2.7",
         "optimus/genie": "~2.0",
         "optimus/heimdal": "^1.5",
         "php-ds/php-ds": "^1.2"

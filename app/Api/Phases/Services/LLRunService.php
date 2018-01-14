@@ -43,8 +43,9 @@ class LLRunService extends Service
             'content'     => $data['content'],
             'token_types' => json_encode($data['token_types']),
             'grammar'     => json_encode($data['grammar']),
-            'stack'       => null, //json_encode([]),
-            'input_index' => 0
+            'stack'       => null,
+            'input_index' => 0,
+            'parse_tree'  => null
         ];
     }
 
@@ -85,18 +86,22 @@ class LLRunService extends Service
     {
         return LL::fromData([
             'content'    => $llRun->content,
-            'tokenTypes' => json_decode($llRun->token_types, true),
+            'token_types' => json_decode($llRun->token_types, true),
             'grammar'    => json_decode($llRun->grammar, true),
             'stack'      => is_null($llRun->stack) ? null : json_decode($llRun->stack, true),
-            'inputIndex' => $llRun->input_index
+            'input_index' => $llRun->input_index,
+            'parse_tree' => json_decode($llRun->parse_tree, true)
         ]);
     }
 
     private function updateLLRun($llRun, $parser)
     {
+        $parserJson = $parser->jsonSerialize();
+
         $this->repository->update($llRun, [
             'stack'       => json_encode($parser->getStack()->toArray()),
-            'input_index' => $parser->getInput()->getIndex()
+            'input_index' => $parser->getInput()->getIndex(),
+            'parse_tree'  => json_encode($parserJson['parse_tree'])
         ]);
     }
 }
