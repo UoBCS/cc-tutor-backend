@@ -45,7 +45,7 @@ class LLRunService extends Service
         ];
     }
 
-    public function predict(int $runId, string $lhs, array $rhs)
+    public function predict(int $runId, string $lhs, $rhs)
     {
         $llRun = $this->getRequestedResource($runId);
 
@@ -54,8 +54,10 @@ class LLRunService extends Service
         $grammar = $parser->getGrammar();
         $rhsV = new Vector();
 
-        foreach ($rhs as $item) {
-            $rhsV->push($grammar->getGrammarEntityByName($item));
+        if ($rhs !== null) {
+            foreach ($rhs as $item) {
+                $rhsV->push($grammar->getGrammarEntityByName($item));
+            }
         }
 
         $parser->predict(new NonTerminal($lhs), $rhsV);

@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Core\Syntax\Token;
+
+use App\Core\Syntax\Grammar\Terminal;
 use JsonSerializable;
 
 class Token implements JsonSerializable
@@ -68,6 +70,11 @@ class Token implements JsonSerializable
     public function isEOF()
     {
         return $this->isEOF;
+    }
+
+    public function toTerminal()
+    {
+        return new Terminal($this->type);
     }
 
     public function jsonSerialize()

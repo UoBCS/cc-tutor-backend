@@ -6,6 +6,7 @@ use App\Core\Automata\FiniteAutomaton;
 use App\Core\Exceptions\LexerException;
 use App\Core\IO\InputStream;
 use App\Core\Syntax\Token\Token;
+use App\Core\Syntax\Token\TokenType;
 use Ds\Set;
 use Ds\Stack;
 use Ds\Vector;
@@ -20,10 +21,10 @@ class Lexer
     private $currentToken;
     private $dfa;
 
-    public function __construct(InputStream $input, Set $tokenTypes)
+    public function __construct($input, $tokenTypes)
     {
-        $this->input = $input;
-        $this->tokenTypes = $tokenTypes;
+        $this->input      = $input instanceof InputStream ? $input : new InputStream($input);
+        $this->tokenTypes = $tokenTypes instanceof Set ? $tokenTypes : TokenType::fromDataArray($tokenTypes);
         $this->buildDfa();
     }
 

@@ -36,7 +36,7 @@ class NonTerminal implements GrammarEntity, Hashable, JsonSerializable
 
     public function equals($obj) : bool
     {
-        return $obj instanceof NonTerminal ? $this->getName() === $obj->getName() : false;
+        return $obj instanceof NonTerminal && $this->getName() === $obj->getName();
     }
 
     public function hash()

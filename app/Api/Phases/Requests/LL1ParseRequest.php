@@ -16,7 +16,8 @@ class LL1ParseRequest extends ApiRequest
         return [
             'content'     => 'required|string',
             'token_types' => 'required|token_types',
-            'grammar'     => 'required|grammar'
+            'grammar'     => 'required|grammar',
+            'interactive' => 'boolean'
         ];
     }
 }

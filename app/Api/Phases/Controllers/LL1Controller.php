@@ -25,8 +25,19 @@ class LL1Controller extends Controller
             $this->service->parse(
                 $request->input('content'),
                 $request->input('token_types'),
-                $request->input('grammar')
+                $request->input('grammar'),
+                $request->input('interactive', true)
             )
         );
+    }
+
+    public function first()
+    {
+
+    }
+
+    public function follow()
+    {
+
     }
 }

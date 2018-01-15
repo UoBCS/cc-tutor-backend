@@ -52,9 +52,15 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
 
     public function equals($obj) : bool
     {
-        return $obj instanceof Terminal
-            && (($this->tokenType === null && $obj->tokenType === null)
-                || ($this->tokenType->equals($obj->tokenType)));
+        if (!($obj instanceof Terminal)) {
+            return false;
+        }
+
+        if ($this->isEpsilon() === $obj->isEpsilon()) {
+            return $this->isEpsilon() || $this->tokenType->equals($obj->tokenType);
+        }
+
+        return false;
     }
 
     public function hash() : string

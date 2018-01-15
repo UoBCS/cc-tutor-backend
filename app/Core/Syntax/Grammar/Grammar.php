@@ -13,27 +13,35 @@ class Grammar implements JsonSerializable
     private $terminals;
     private $startSymbol;
 
-    public function getProductions(NonTerminal $lhs) : Vector
+    public function getProductions(NonTerminal $lhs) : array
     {
         return $this->productions->get($lhs, null);
     }
 
-    public function getAllProductions() : Vector
+    public function getAllProductions() : Map
     {
         return $this->productions;
     }
 
-    public function hasProduction(NonTerminal $lhs, Vector $rhs) : bool
+    public function hasProduction(NonTerminal $lhs, $rhs) : bool
     {
         if ($this->productions->get($lhs, null) === null) {
             return false;
         }
 
-        $rhsCount = $rhs->count();
+        if (!is_array($rhs)) { //!($rhs instanceof Vector)) {
+            $rhs = $rhs->isTerminal() && $rhs->isEpsilon() ? [] : [$rhs];
+        }
+
+        $rhsCount = count($rhs); //$rhs->count();
 
         foreach ($this->productions->get($lhs) as $rhs1) {
-            if ($rhsCount !== $rhs1->count()) {
+            if ($rhsCount !== count($rhs1)) {
                 continue;
+            }
+
+            if ($rhsCount === 0 && count($rhs1) === 0) {
+                return true;
             }
 
             $found = true;
@@ -64,9 +72,11 @@ class Grammar implements JsonSerializable
         }
 
         foreach ($data['productions'] as $lhs => $rhs) {
-            $this->productions->put(new NonTerminal($lhs), new Vector(array_map(function ($r) {
-                return $r === null ? null : new Vector(array_map([$this, 'getGrammarEntityByName'], $r));
-            }, $rhs)));
+            $this->productions->put(new NonTerminal($lhs), array_map(function ($r) {
+                return $r === null
+                    ? []
+                    : array_map([$this, 'getGrammarEntityByName'], $r);
+            }, $rhs));
         }
 
         $this->startSymbol = new NonTerminal($data['start_symbol']);

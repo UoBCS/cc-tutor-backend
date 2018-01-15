@@ -33,11 +33,11 @@ class LL implements JsonSerializable
     {
         $this->stack = new Stack();
         $this->lexer = $lexer;
-        $this->input = is_null($lexer) ? new ConsumableInput() : new ConsumableInput($this->lexer->getTokens());
+        $this->input = $lexer === null ? new ConsumableInput() : new ConsumableInput($this->lexer->getTokens());
         $this->grammar = new Grammar();
 
         // Setup grammar object
-        if (!is_null($lexer) && count($grammar) > 0) {
+        if ($lexer !== null && count($grammar) > 0) {
             $terminals = array_map(function (TokenType $tokenType) {
                 return new Terminal($tokenType);
             }, $this->lexer->getTokenTypes()->toArray());
@@ -92,7 +92,7 @@ class LL implements JsonSerializable
 
     public function setStackFromData($data)
     {
-        if (is_null($data)) {
+        if ($data === null) {
             return;
         }
 
@@ -105,7 +105,7 @@ class LL implements JsonSerializable
             if (isset($gEntity['regex'])) {
                 $tokenType = $this->lexer->getTokenTypeByName($gEntity['name']);
 
-                if (!is_null($tokenType)) {
+                if ($tokenType !== null) {
                     $this->stack->push(new Terminal($tokenType));
                 }
             } else {

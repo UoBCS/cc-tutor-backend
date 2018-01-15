@@ -59,3 +59,20 @@ function peek($arr)
 {
     return count($arr) - 1 < 0 ? null : $arr[count($arr) - 1];
 }
+
+function arrayFind($haystack, $needle, $useEquals = true)
+{
+    foreach ($haystack as $i => $val) {
+        if ($useEquals) {
+            if ($val->equals($needle)) {
+                return $i;
+            }
+        } else {
+            if ($val === $needle) {
+                return $i;
+            }
+        }
+    }
+
+    return -1;
+}
