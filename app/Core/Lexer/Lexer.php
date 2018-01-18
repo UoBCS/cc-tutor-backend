@@ -93,9 +93,11 @@ class Lexer
                     $finalStates->push($finalStateData);
                 }
 
-                $this->consumeChar();
+                /* > */ $this->inspector->breakpoint('consume_char', [
+                /* > */     'index' => $this->input->index()
+                /* > */ ]);
 
-                /* > */ $this->inspector->breakpoint('consume_char', null);
+                $this->consumeChar();
 
                 if ($this->lastChar === InputStream::EOF) {
                     break;
@@ -134,11 +136,6 @@ class Lexer
             $data = $chosenState['state']->getData();
 
             if (is_array($data)) {
-
-                /* > */ $this->inspector->breakpoint('state_data', [
-                /* > */    'state' => $data,
-                /* > */ ]);
-
                 // Get highest priority token
                 $tokenType = $data[0];
 
@@ -149,7 +146,9 @@ class Lexer
                 }
 
                 /* > */ $this->inspector->breakpoint('highest_priority_lexeme', [
-                /* > */    'token_type' => $tokenType
+                /* > */    'state'      => $data,
+                /* > */    'token_type' => $tokenType,
+                /* > */    'content_index' => $this->input->index()
                 /* > */ ]);
 
                 $this->currentToken->setType($tokenType);
