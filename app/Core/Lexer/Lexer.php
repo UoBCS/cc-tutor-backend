@@ -21,11 +21,16 @@ class Lexer
     private $currentToken;
     private $dfa;
 
+    private $inspector;
+
     public function __construct($input, $tokenTypes)
     {
         $this->input      = $input instanceof InputStream ? $input : new InputStream($input);
         $this->tokenTypes = $tokenTypes instanceof Set ? $tokenTypes : TokenType::fromDataArray($tokenTypes);
         $this->buildDfa();
+
+        $this->inspector = inspector();
+        $this->inspector->createStore('breakpoints', 'array');
     }
 
     public function getTokenTypes()
@@ -48,7 +53,7 @@ class Lexer
     {
         do {
             if ($this->input === NULL) {
-                throw new LexerException("nextToken requires a non-null input stream.");
+                throw new LexerException('The nextToken method requires a non-null input stream.');
             }
 
             // Check if EOF has been hit
@@ -61,23 +66,36 @@ class Lexer
             $tokenStartColumn = $this->tokenColumn;
 
             $finalStates = new Stack();
-            $S = new Stack();
-            $S->push($this->dfa->getInitial());
+            $s = $this->dfa->getInitial();
+            $S = new Stack([$s]);
+
+            /* > */ $this->inspector->breakpoint('init', [
+            /* > */    'state'      => $s,
+            /* > */    'token_text' => $text
+            /* > */ ]);
 
             while (!$S->isEmpty()) {
                 $s = $S->pop();
 
+                /* > */ $this->inspector->breakpoint('consider_state', [
+                /* > */    'state' => $s,
+                /* > */    'stack' => $S->toArray()
+                /* > */ ]);
+
                 if ($s->isFinal()) {
-                    $finalStates->push([
+                    $finalStateData = [
                         'state' => $s,
                         'text' => $text,
                         'line' => $this->tokenLine,
                         'column' => $this->tokenColumn,
                         'index' => $this->input->index()
-                    ]);
+                    ];
+                    $finalStates->push($finalStateData);
                 }
 
                 $this->consumeChar();
+
+                /* > */ $this->inspector->breakpoint('consume_char', null);
 
                 if ($this->lastChar === InputStream::EOF) {
                     break;
@@ -85,9 +103,18 @@ class Lexer
 
                 $neighbours = $s->getState($this->lastChar);
 
+                /* > */ $this->inspector->breakpoint('state_neighbours', [
+                /* > */    'neighbours' => $neighbours
+                /* > */ ]);
+
                 if (count($neighbours) !== 0) {
                     $text .= $this->lastChar;
                     $S->push($neighbours[0]);
+
+                    /* > */ $this->inspector->breakpoint('update_text', [
+                    /* > */    'stack'      => $S->toArray(),
+                    /* > */    'token_text' => $text
+                    /* > */ ]);
                 }
             }
 
@@ -108,6 +135,10 @@ class Lexer
 
             if (is_array($data)) {
 
+                /* > */ $this->inspector->breakpoint('state_data', [
+                /* > */    'state' => $data,
+                /* > */ ]);
+
                 // Get highest priority token
                 $tokenType = $data[0];
 
@@ -117,6 +148,10 @@ class Lexer
                     }
                 }
 
+                /* > */ $this->inspector->breakpoint('highest_priority_lexeme', [
+                /* > */    'token_type' => $tokenType
+                /* > */ ]);
+
                 $this->currentToken->setType($tokenType);
                 $this->currentToken->setColumn($tokenStartColumn);
                 $this->currentToken->setLine($this->tokenLine);
@@ -125,6 +160,10 @@ class Lexer
                 // throw exception
             }
         } while ($skipF && $this->currentToken->getType()->skippable);
+
+        /* > */ $this->inspector->breakpoint('produced_token', [
+        /* > */    'token' => $this->currentToken
+        /* > */ ]);
 
         return $this->currentToken;
     }
@@ -155,6 +194,15 @@ class Lexer
 
         // NFA to DFA
         $this->dfa = $nfa->toDfa();
+
+        $this->dfa->traverse(function ($s) {
+            $s->serialization['showStates'] = false;
+        }, 0, NULL, NULL);
+    }
+
+    public function getDfa()
+    {
+        return $this->dfa;
     }
 
     public function getTokens()

@@ -7,6 +7,9 @@ use JsonSerializable;
 
 class DfaState extends State implements JsonSerializable
 {
+    public $serialization = [
+        'showStates' => true
+    ];
     private $states;
 
     public function __construct(Set $states)
@@ -21,6 +24,8 @@ class DfaState extends State implements JsonSerializable
 
     public function jsonSerialize()
     {
-        return array_merge(parent::jsonSerialize(), ['states' => $this->states]);
+        return $this->serialization['showStates']
+                ? array_merge(parent::jsonSerialize(), ['states' => $this->states])
+                : parent::jsonSerialize();
     }
 }

@@ -14,12 +14,16 @@ class LexicalAnalysisService
     public function __construct()
     {
         $this->inspector = inspector();
-        //$this->inspector->getState('breakpoints')
     }
 
     public function run(string $content, array $tokenTypes)
     {
         $lexer = new Lexer(new InputStream($content), TokenType::fromDataArray($tokenTypes));
-        return $lexer->getTokens();
+        $lexer->getTokens();
+
+        return [
+            'dfa'         => $lexer->getDfa(),
+            'breakpoints' => $this->inspector->getState('breakpoints')
+        ];
     }
 }

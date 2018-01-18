@@ -18,7 +18,10 @@ class LexicalAnalysisController extends Controller
     public function run(LexicalAnalysisRequest $request)
     {
         return $this->response(
-            $this->service->run($request->input('content'), $request->input('token_types'))
+            $this->service->run(
+                $request->input('content'),
+                $request->input('token_types')
+            )
         );
     }
 }
