@@ -6,6 +6,7 @@ Route::prefix('syntax-analysis')->group(function () {
         Route::post('/init-parser', 'LLRunController@create');
         Route::post('/predict', 'LLRunController@predict');
         Route::post('/match', 'LLRunController@match');
+        Route::delete('/{id}', 'LLRunController@delete');
     });
 
     Route::prefix('ll1')->group(function () {

@@ -88,7 +88,9 @@ abstract class Controller extends BaseController
         $data = getOnly($this->getFields($this->createRules), $data[$this->key]);
         $data = $this->processCreateData($data);
 
-        return $this->response($this->service->create($data), 201);
+        $resultData = $this->processCreationResult($this->service->create($data));
+
+        return $this->response($resultData, 201);
     }
 
     /**
@@ -131,6 +133,11 @@ abstract class Controller extends BaseController
      * @return array
      */
     protected function processCreateData($data)
+    {
+        return $data;
+    }
+
+    protected function processCreationResult($data)
     {
         return $data;
     }

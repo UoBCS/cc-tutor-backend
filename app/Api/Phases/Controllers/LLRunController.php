@@ -6,6 +6,8 @@ use App\Api\Phases\Requests\LexicalAnalysisRequest;
 use App\Api\Phases\Requests\LLRunMatchRequest;
 use App\Api\Phases\Requests\LLRunPredictRequest;
 use App\Api\Phases\Services\LLRunService;
+use App\Core\Lexer\Lexer;
+use App\Core\Parser\LL;
 use App\Infrastructure\Http\Crud\Controller;
 use Illuminate\Http\Request;
 
@@ -46,5 +48,26 @@ class LLRunController extends Controller
     protected function processCreateData($data)
     {
         return $this->service->initialize($data);
+    }
+
+    protected function processCreationResult($data)
+    {
+        $newData = (array) $data;
+
+        $tokenTypes = json_decode($data['token_types'], true);
+        $grammar = json_decode($data['grammar'], true);
+        $lexer = new Lexer($data->content, $tokenTypes);
+        $parser = new LL($lexer, $grammar);
+        $jsonParser = $parser->jsonSerialize();
+
+        $data['token_types'] = $tokenTypes;
+        $data['grammar'] = $grammar;
+        $data['input'] = $jsonParser['input'];
+        $data['stack'] = $jsonParser['stack'];
+        $data['parse_tree'] = $jsonParser['parse_tree'];
+
+        unset($data['input_index']);
+
+        return $data;
     }
 }

@@ -52,15 +52,15 @@ class LLRunService extends Service
         $parser = $this->createParser($llRun);
 
         $grammar = $parser->getGrammar();
-        $rhsV = new Vector();
+        $rhsArr = [];
 
         if ($rhs !== null) {
             foreach ($rhs as $item) {
-                $rhsV->push($grammar->getGrammarEntityByName($item));
+                $rhsArr[] = $grammar->getGrammarEntityByName($item);
             }
         }
 
-        $parser->predict(new NonTerminal($lhs), $rhsV);
+        $parser->predict(new NonTerminal($lhs), $rhsArr);
 
         $this->updateLLRun($llRun, $parser);
 

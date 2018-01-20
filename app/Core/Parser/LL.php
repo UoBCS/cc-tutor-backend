@@ -14,7 +14,6 @@ use App\Infrastructure\Utils\Ds\Pair;
 use App\Infrastructure\Utils\Ds\Node;
 use Ds\Set;
 use Ds\Stack;
-use Ds\Vector;
 use JsonSerializable;
 
 class LL implements JsonSerializable
@@ -56,7 +55,7 @@ class LL implements JsonSerializable
 
     public static function fromData(array $data) : LL
     {
-        $lexer = new Lexer(new InputStream($data['content']), TokenType::fromDataArray($data['token_types']));
+        $lexer = new Lexer($data['content'], $data['token_types']);
         $parser = new LL($lexer, $data['grammar']);
         $parser->setInputIndex($data['input_index']);
         $parser->setStackFromData($data['stack']);
@@ -157,7 +156,7 @@ class LL implements JsonSerializable
         }
     }
 
-    public function predict(NonTerminal $lhs, Vector $rhs)
+    public function predict(NonTerminal $lhs, array $rhs)
     {
         if ($this->stack->isEmpty()) {
             if ($this->input->hasFinished()) {
@@ -184,7 +183,7 @@ class LL implements JsonSerializable
         $this->stack->pop();
         $node = $this->parseTree['stack']->pop();
 
-        for ($i = $rhs->count() - 1; $i >= 0; $i--) {
+        for ($i = count($rhs) - 1; $i >= 0; $i--) {
             $this->stack->push($rhs[$i]);
 
             $childNode = new Node(new Pair(++$this->parseTree['node_index'], $rhs[$i]));
@@ -221,17 +220,15 @@ class LL implements JsonSerializable
 
     public function jsonSerialize()
     {
-        $visitor = new ParseTreeSerializeVisitor();
+        $visitor = new ParseTreeSerializeVisitor(function ($pair) {
+            return $pair->getSnd()->getName();
+        });
 
         return [
-            'stack'      => $this->stack,
+            'stack'      => array_map(function ($ge) { return $ge->getName(); }, $this->stack->toArray()),
             'input'      => $this->input,
             'grammar'    => $this->grammar,
-            'parse_tree' => [
-                'tree'  => $this->parseTree['root']->accept($visitor),
-                'stack' => $this->parseTree['stack'],
-                'node_index' => $this->parseTree['node_index']
-            ]
+            'parse_tree' => $this->parseTree['root']->accept($visitor)
         ];
     }
 
