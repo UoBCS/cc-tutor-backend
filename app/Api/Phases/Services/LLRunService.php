@@ -10,6 +10,7 @@ use App\Core\IO\InputStream;
 use App\Core\Lexer\Lexer;
 use App\Core\Parser\LL;
 use App\Core\Syntax\Grammar\NonTerminal;
+use App\Core\Syntax\Grammar\Terminal;
 use App\Core\Syntax\Token\TokenType;
 use App\Infrastructure\Http\Crud\Service;
 use Ds\Vector;
@@ -54,7 +55,7 @@ class LLRunService extends Service
         $grammar = $parser->getGrammar();
         $rhsArr = [];
 
-        if ($rhs !== null) {
+        if (!Terminal::isEpsilonStruct($rhs)) { //$rhs !== null) {
             foreach ($rhs as $item) {
                 $rhsArr[] = $grammar->getGrammarEntityByName($item);
             }
@@ -94,10 +95,10 @@ class LLRunService extends Service
 
     private function updateLLRun($llRun, $parser)
     {
-        $parserJson = $parser->jsonSerialize();
+        $parserJson = $parser->dbJsonSerialize();
 
         $this->repository->update($llRun, [
-            'stack'       => json_encode($parser->getStack()->toArray()),
+            'stack'       => json_encode($parserJson['stack']),
             'input_index' => $parser->getInput()->getIndex(),
             'parse_tree'  => json_encode($parserJson['parse_tree'])
         ]);

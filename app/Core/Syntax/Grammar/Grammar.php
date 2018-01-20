@@ -36,12 +36,12 @@ class Grammar implements JsonSerializable
         $rhsCount = count($rhs); //$rhs->count();
 
         foreach ($this->productions->get($lhs) as $rhs1) {
-            if ($rhsCount !== count($rhs1)) {
-                continue;
+            if ($rhsCount === 0 && Terminal::isEpsilonStruct($rhs1)) {
+                return true;
             }
 
-            if ($rhsCount === 0 && count($rhs1) === 0) {
-                return true;
+            if ($rhsCount !== count($rhs1)) {
+                continue;
             }
 
             $found = true;
@@ -134,9 +134,12 @@ class Grammar implements JsonSerializable
         $nts = $this->getNonTerminals();
 
         foreach ($ts as $t) {
-            $tokenType = $t->getTokenType();
+            if ($t->isEpsilon() && ($name === null || $name === Terminal::EPSILON)) {
+                return $t;
+            }
 
-            if (($name === null && $tokenType === null) || ($tokenType !== null && $name === $tokenType->name)) {
+            $tokenType = $t->getTokenType();
+            if ($tokenType !== null && $name === $tokenType->name) {
                 return $t;
             }
         }

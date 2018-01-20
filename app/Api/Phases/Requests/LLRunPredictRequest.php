@@ -16,7 +16,7 @@ class LLRunPredictRequest extends ApiRequest
         return [
             'run_id' => 'required|integer',
             'lhs'    => 'required|string',
-            'rhs'    => 'required|array'
+            'rhs'    => 'array|nullable'
         ];
     }
 }

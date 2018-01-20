@@ -8,6 +8,7 @@ use JsonSerializable;
 
 class Terminal implements GrammarEntity, Hashable, JsonSerializable
 {
+    const EPSILON = 'ε';
     private $tokenType = null;
 
     public function __construct(TokenType $tokenType = null)
@@ -19,6 +20,35 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
     {
         return new Terminal();
     }
+
+    public static function isEpsilonStruct($data) : bool
+    {
+        if ($data === null) {
+            return true;
+        }
+
+        if (is_array($data)) {
+            $dCount = count($data);
+
+            return $dCount === 0 ||
+                ($dCount === 1 && ($data[0] === null || ($data[0] instanceof Terminal && $data[0]->isEpsilon()) || $data[0] === self::EPSILON));
+        }
+
+        if ($data instanceof Terminal) {
+            return $data->isEpsilon();
+        }
+
+        return false;
+    }
+
+    /*public static function toEpsilonRhs($rhs) : array
+    {
+        if (!self::isEpsilonStruct($rhs)) {
+            return $rhs;
+        }
+
+        return [self::epsilon()];
+    }*/
 
     public function getTokenType()
     {
@@ -37,7 +67,7 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
 
     public function getName() : string
     {
-        return $this->tokenType->name;
+        return $this->tokenType === null ? self::EPSILON : $this->tokenType->name;
     }
 
     public function isTerminal() : bool

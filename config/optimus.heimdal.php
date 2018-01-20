@@ -1,5 +1,6 @@
 <?php
 
+use App\Core\Exceptions as CoreExceptions;
 use App\Infrastructure\Exceptions\Formatters as ExtFormatters;
 use Symfony\Component\HttpKernel\Exception as SymfonyException;
 use Optimus\Heimdal\Formatters as BaseFormatters;
@@ -10,6 +11,7 @@ return [
     // Has to be in prioritized order, e.g. highest priority first.
     'formatters' => [
         SymfonyException\UnprocessableEntityHttpException::class => BaseFormatters\UnprocessableEntityHttpExceptionFormatter::class,
+        CoreExceptions\ParserException::class => BaseFormatters\UnprocessableEntityHttpExceptionFormatter::class,
         SymfonyException\AccessDeniedHttpException::class => ExtFormatters\AccessDeniedHttpExceptionFormatter::class,
         SymfonyException\UnauthorizedHttpException::class => ExtFormatters\UnauthorizedHttpExceptionFormatter::class,
         SymfonyException\NotFoundHttpException::class => ExtFormatters\NotFoundHttpExceptionFormatter::class,

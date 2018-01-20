@@ -96,20 +96,11 @@ class LL implements JsonSerializable
         }
 
         $this->stack = new Stack();
-        $tokenTypes = $this->lexer->getTokenTypes();
 
         for ($i = count($data) - 1; $i >= 0; $i--) {
             $gEntity = $data[$i];
 
-            if (isset($gEntity['regex'])) {
-                $tokenType = $this->lexer->getTokenTypeByName($gEntity['name']);
-
-                if ($tokenType !== null) {
-                    $this->stack->push(new Terminal($tokenType));
-                }
-            } else {
-                $this->stack->push(new NonTerminal($gEntity));
-            }
+            $this->stack->push($this->grammar->getGrammarEntityByName($gEntity));
         }
     }
 
@@ -156,7 +147,7 @@ class LL implements JsonSerializable
         }
     }
 
-    public function predict(NonTerminal $lhs, array $rhs)
+    public function predict(NonTerminal $lhs, $rhs)
     {
         if ($this->stack->isEmpty()) {
             if ($this->input->hasFinished()) {
@@ -184,6 +175,10 @@ class LL implements JsonSerializable
         $node = $this->parseTree['stack']->pop();
 
         for ($i = count($rhs) - 1; $i >= 0; $i--) {
+            if (Terminal::isEpsilonStruct($rhs[$i])) {
+                continue;
+            }
+
             $this->stack->push($rhs[$i]);
 
             $childNode = new Node(new Pair(++$this->parseTree['node_index'], $rhs[$i]));
@@ -216,6 +211,20 @@ class LL implements JsonSerializable
         $this->input->advance();
 
         $this->parseTree['stack']->pop();
+    }
+
+    public function dbJsonSerialize()
+    {
+        $visitor = new ParseTreeSerializeVisitor();
+        $data = $this->jsonSerialize();
+
+        $data['parse_tree'] = [
+            'tree'       => $this->parseTree['root']->accept($visitor),
+            'stack'      => $this->parseTree['stack'],
+            'node_index' => $this->parseTree['node_index']
+        ];
+
+        return $data;
     }
 
     public function jsonSerialize()
