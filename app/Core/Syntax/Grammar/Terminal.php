@@ -41,14 +41,14 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
         return false;
     }
 
-    /*public static function toEpsilonRhs($rhs) : array
+    public static function toEpsilon($rhs) : array
     {
         if (!self::isEpsilonStruct($rhs)) {
             return $rhs;
         }
 
         return [self::epsilon()];
-    }*/
+    }
 
     public function getTokenType()
     {

@@ -3,9 +3,7 @@
 namespace App\Api\Phases\Services;
 
 use App\Core\Inspector;
-use App\Core\IO\InputStream;
 use App\Core\Lexer\Lexer;
-use App\Core\Syntax\Token\TokenType;
 
 class LexicalAnalysisService
 {
@@ -18,7 +16,7 @@ class LexicalAnalysisService
 
     public function run(string $content, array $tokenTypes)
     {
-        $lexer = new Lexer(new InputStream($content), TokenType::fromDataArray($tokenTypes));
+        $lexer = new Lexer($content, $tokenTypes);
         $lexer->getTokens();
 
         return [

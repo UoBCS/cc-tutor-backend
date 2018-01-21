@@ -24,11 +24,13 @@ class LL1
     private $lexer;
     private $grammar;
     private $parseTree = [
-        'root'       => null,
-        'stack'      => null
+        'root'  => null,
+        'stack' => null
     ];
 
     private $parsingTable;
+
+    private $inspector;
 
     public function __construct(Lexer $lexer = null, array $grammar = [])
     {
@@ -57,9 +59,12 @@ class LL1
             // Compute parsing table for non-interactive mode
             $this->computeParsingTable();
         }
+
+        $this->inspector = inspector();
+        $this->inspector->createStore('breakpoints', 'array');
     }
 
-    public function parse()
+    public function parse() : bool
     {
         while (true) {
             if ($this->stack->isEmpty()) {
@@ -67,28 +72,40 @@ class LL1
             }
 
             $grammarEntity = $this->stack->peek();
+            $result = null;
+
+            /* > */ $this->inspector->breakpoint('pre_step', [
+            /* > */     'stack'       => array_map('getGrammarEntityName', $this->stack->toArray()),
+            /* > */     'input_index' => $this->input->getIndex(),
+            /* > */     'parse_tree'  => $this->getJsonParseTree()
+            /* > */ ]);
 
             if ($grammarEntity->isTerminal()) {
-                if ($this->attemptMatch($grammarEntity)) {
-                    break;
-                }
-
-                //var_dump("MATCH=============");
-                //var_dump($this->stack);
+                /* > */ $this->inspector->breakpoint('init_match', null);
+                $result = $this->attemptMatch($grammarEntity);
+                /* > */ $this->inspector->breakpoint('end_match', null);
             } else {
-                if ($this->attemptPredict($grammarEntity)) {
-                    break;
-                }
+                /* > */ $this->inspector->breakpoint('init_predict', null);
+                $result = $this->attemptPredict($grammarEntity);
+                /* > */ $this->inspector->breakpoint('end_predict', null);
+            }
 
-                //var_dump("PREDICT=============");
-                //var_dump($this->stack);
+            if ($result['status'] === 'DONE' || $result['status'] === 'ERROR') {
+                break;
             }
         }
 
-        // TODO: check for input?
+        if ($result['status'] === 'ERROR') {
+            /* > */ $this->inspector->breakpoint('parse_error', [
+            /* > */     'input_index' => $this->input->getIndex()
+            /* > */ ]);
 
-        $visitor = new ParseTreeSerializeVisitor();
-        return $this->parseTree['root']->accept($visitor);
+            return false;
+        }
+
+        return true;
+
+        // TODO: check for input?
     }
 
     public function computeParsingTable()
@@ -141,6 +158,11 @@ class LL1
         $firstSet = new Set();
         $stopped = false;
 
+        /* > */ $this->inspector->breakpoint('init_first_all', [
+        /* > */     'alpha'     => array_map('getGrammarEntityName', $alpha), // TODO: transform to epsilon
+        /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
+        /* > */ ]);
+
         foreach ($alpha as $X_i) {
             $first = $this->first($X_i);
             $firstSet = $firstSet->merge(
@@ -149,7 +171,14 @@ class LL1
                 })
             );
 
+            /* > */ $this->inspector->breakpoint('first_all_accumulator', [
+            /* > */     'grammar_entity' => $X_i->getName(),
+            /* > */     'first'          => array_map('getGrammarEntityName', $first->toArray()),
+            /* > */     'first_set'      => array_map('getGrammarEntityName', $firstSet->toArray())
+            /* > */ ]);
+
             if (!$first->contains(Terminal::epsilon())) {
+                /* > */ $this->inspector->breakpoint('first_no_epsilon', null);
                 $stopped = true;
                 break;
             }
@@ -157,6 +186,14 @@ class LL1
 
         if (!$stopped) {
             $firstSet->add(Terminal::epsilon());
+
+            /* > */ $this->inspector->breakpoint('first_set_add_epsilon', [
+            /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
+            /* > */ ]);
+        } else {
+            /* > */ $this->inspector->breakpoint('end_first_all', [
+            /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
+            /* > */ ]);
         }
 
         return $firstSet;
@@ -172,21 +209,16 @@ class LL1
         }
 
         $productions = $this->productionsWhereNonTerminalInRhs($A);
-        //var_dump('LOOOOOOOOOOOOOOOOOOOOOOOOOOL');
-        //var_dump($A);
-        //var_dump($productions);
 
         foreach ($productions as $X => $rhss) {
             foreach ($rhss as $rhs) {
-                $index = arrayFind($rhs, $A); //$rhs->find($A);
-                //var_dump($index);
+                $index = arrayFind($rhs, $A);
 
                 if ($index === count($rhs) - 1 && !$X->equals($A)) {
                     $followSet = $followSet->merge($this->follow($X));
                 } else {
                     $beta = array_slice($rhs, $index + 1);
                     $firstBeta = $this->firstAll($beta);
-                    //var_dump($firstBeta);
 
                     $followSet = $followSet->merge(
                         $firstBeta->filter(function ($terminal) {
@@ -204,7 +236,20 @@ class LL1
         return $followSet;
     }
 
-    private function productionsWhereNonTerminalInRhs(NonTerminal $A)
+    public function getInput() : ConsumableInput
+    {
+        return $this->input;
+    }
+
+    public function getJsonParseTree() : array
+    {
+        $visitor = new ParseTreeSerializeVisitor(function ($node) {
+            return $node->getName();
+        });
+        return $this->parseTree['root']->accept($visitor);
+    }
+
+    private function productionsWhereNonTerminalInRhs(NonTerminal $A) : Map
     {
         $map = new Map();
 
@@ -214,20 +259,13 @@ class LL1
             foreach ($rhss as $rhs) {
                 foreach ($rhs as $grammarEntity) {
                     if ($grammarEntity->equals($A)) {
-                        $updatedRhs = $map->get($lhs); //, $rhs);
+                        $updatedRhs = $map->get($lhs);
                         $updatedRhs[] = $rhs;
                         $map->put($lhs, $updatedRhs);
                     }
                 }
-                /*if ($rhs->contains($A)) {
-                    $map->get($lhs)->push($rhs);
-                }*/
             }
         }
-
-        /*var_dump('============================================');
-        var_dump($map);
-        var_dump('============================================');*/
 
         $map = $map->filter(function ($lhs, $rhss) {
             return count($rhss) > 0;
@@ -236,34 +274,50 @@ class LL1
         return $map;
     }
 
-    private function attemptMatch(Terminal $stackTerminal)
+    private function attemptMatch(Terminal $stackTerminal) : array
     {
         if ($this->input->hasFinished()) {
             if ($this->stack->isEmpty()) {
-                return true;
+                return [
+                    'status' => 'DONE'
+                ];
             } else {
-                throw new ParserException('Premature end of input.');
+                return [
+                    'status'  => 'ERROR',
+                    'message' => 'Premature end of input.'
+                ];
             }
         }
 
         $inputTerminal = $this->input->read()->toTerminal();
 
         if (!$stackTerminal->equals($inputTerminal)) {
-            throw new ParserException('Expecting ' . $stackTerminal->getName() . '; found ' . $inputTerminal->getName() . ' in the input instead.');
+            return [
+                'status'  => 'ERROR',
+                'message' => 'Expecting ' . $stackTerminal->getName() . '; found ' . $inputTerminal->getName() . ' in the input instead.'
+            ];
         }
+
+        /* > */ $this->inspector->breakpoint('match_input_index', [
+        /* > */     'input_index' => $this->input->getIndex()
+        /* > */ ]);
 
         $this->stack->pop();
         $this->input->advance();
         $this->parseTree['stack']->pop();
 
-        return false;
+        return [
+            'status' => 'CONTINUE'
+        ];
     }
 
-    private function attemptPredict(NonTerminal $stackNonTerminal)
+    private function attemptPredict(NonTerminal $stackNonTerminal) : array
     {
         if ($this->stack->isEmpty()) {
             if ($this->input->hasFinished()) {
-                return true;
+                return [
+                    'status' => 'DONE'
+                ];
             } else {
                 $tokens = array_map(function ($token) {
                     return $token->getType()->name;
@@ -271,7 +325,10 @@ class LL1
 
                 $tokensStr = implode(' ', $tokens);
 
-                throw new ParserException("Unexpected input $tokensStr at the end.");
+                return [
+                    'status'  => 'ERROR',
+                    'message' => "Unexpected input $tokensStr at the end."
+                ];
             }
         }
 
@@ -282,7 +339,6 @@ class LL1
         $followMatches = [];
         foreach ($rhss as $alpha) {
             $firstAlpha = $this->firstAll($alpha);
-            //var_dump($firstAlpha);
 
             if ($firstAlpha->contains($firstInputTerminal)) {
                 $firstMatches[] = $alpha;
@@ -295,29 +351,33 @@ class LL1
             }
         }
 
+        // TODO: stringify matches when conflict happens
         // Check FIRST-FIRST conflicts
         if (count($firstMatches) > 1) {
-            throw new ParserException('Encountered FIRST-FIRST conflict.');
+            return [
+                'status'  => 'ERROR',
+                'message' => 'Encountered FIRST-FIRST conflict.'
+            ];
         }
 
         // Check FIRST-FOLLOW conflicts
         if (count($firstMatches) === 1 && count($followMatches) === 1) {
-            throw new ParserException('Encountered FIRST-FOLLOW conflict.');
+            return [
+                'status'  => 'ERROR',
+                'message' => 'Encountered FIRST-FOLLOW conflict.'
+            ];
         }
 
         $this->stack->pop();
         $node = $this->parseTree['stack']->pop();
 
         $matches = array_merge($firstMatches, $followMatches);
-
-        //var_dump($firstMatches);
-        //var_dump($followMatches);
-        //var_dump($matches);
-
-        //var_dump($this->stack);
-        //die();
-
         $rhs = $matches[0];
+
+        /* > */ $this->inspector->breakpoint('predict_chosen_production', [
+        /* > */     'production' => [$stackNonTerminal, array_map('getGrammarEntityName', $rhs)]
+        /* > */ ]);
+
         for ($i = count($rhs) - 1; $i >= 0; $i--) {
             $this->stack->push($rhs[$i]);
 
@@ -326,6 +386,8 @@ class LL1
             $this->parseTree['stack']->push($childNode);
         }
 
-        return false;
+        return [
+            'status' => 'CONTINUE'
+        ];
     }
 }

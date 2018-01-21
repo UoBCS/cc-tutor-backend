@@ -76,3 +76,8 @@ function arrayFind($haystack, $needle, $useEquals = true)
 
     return -1;
 }
+
+function getGrammarEntityName($ge)
+{
+    return $ge->getName();
+}
