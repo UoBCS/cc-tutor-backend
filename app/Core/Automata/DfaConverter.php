@@ -47,9 +47,7 @@ class DfaConverter
             /* > */ ]);
 
             foreach ($possibleInputs['chars'] as $c) {
-                ///* > */ self::$inspector->stepInto('moveSet', __FUNCTION__);
                 $moveResult = self::moveSet($dfaState->getStates(), $c);
-                ///* > */ self::$inspector->stepOut();
 
                 $states = self::epsilonClosureSet($moveResult);
                 /* > */ self::$inspector->breakpoint('epsilon_closure', [
