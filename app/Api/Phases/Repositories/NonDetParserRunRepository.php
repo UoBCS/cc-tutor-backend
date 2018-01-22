@@ -2,14 +2,14 @@
 
 namespace App\Api\Phases\Repositories;
 
-use App\Api\Phases\Models\LLRun;
+use App\Api\Phases\Models\NonDetParserRun;
 use App\Infrastructure\Http\Crud\Repository;
 
-class LLRunRepository extends Repository
+class NonDetParserRunRepository extends Repository
 {
     public function getModel()
     {
-        return new LLRun();
+        return new NonDetParserRun();
     }
 }
 

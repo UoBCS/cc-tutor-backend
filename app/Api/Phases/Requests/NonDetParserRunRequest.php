@@ -4,7 +4,7 @@ namespace App\Api\Phases\Requests;
 
 use App\Infrastructure\Http\ApiRequest;
 
-class LLRunPredictRequest extends ApiRequest
+class NonDetParserRunRequest extends ApiRequest
 {
     public function authorize()
     {
@@ -14,9 +14,7 @@ class LLRunPredictRequest extends ApiRequest
     public function rules()
     {
         return [
-            'run_id' => 'required|integer',
-            'lhs'    => 'required|string',
-            'rhs'    => 'array|nullable'
+            'run_id' => 'required|integer'
         ];
     }
 }

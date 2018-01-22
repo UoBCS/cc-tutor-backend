@@ -3,14 +3,14 @@
 namespace App\Api\Phases\Events;
 
 use App\Infrastructure\Events\Event;
-use App\Api\Phases\Models\LLRun;
+use App\Api\Phases\Models\NonDetParserRun;
 
-class LLRunWasUpdated extends Event
+class NonDetParserRunWasCreated extends Event
 {
     public $resource;
     public $data;
 
-    public function __construct(LLRun $resource, $data = [])
+    public function __construct(NonDetParserRun $resource, $data = [])
     {
         $this->resource = $resource;
         $this->data     = $data;

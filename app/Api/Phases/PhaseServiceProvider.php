@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Validator;
 class PhaseServiceProvider extends EventServiceProvider
 {
     protected $listen = [
-        Events\LLRunWasCreated::class => [
+        Events\NonDetParserRunWasCreated::class => [
             Listeners\CommitTransaction::class,
         ],
-        Events\LLRunWasDeleted::class => [
+        Events\NonDetParserRunWasDeleted::class => [
             Listeners\CommitTransaction::class,
         ],
-        Events\LLRunWasUpdated::class => [
+        Events\NonDetParserRunWasUpdated::class => [
             Listeners\CommitTransaction::class,
         ]
     ];

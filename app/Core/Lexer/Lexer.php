@@ -5,6 +5,7 @@ namespace App\Core\Lexer;
 use App\Core\Automata\FiniteAutomaton;
 use App\Core\Exceptions\LexerException;
 use App\Core\IO\InputStream;
+use App\Core\Syntax\Grammar\Terminal;
 use App\Core\Syntax\Token\Token;
 use App\Core\Syntax\Token\TokenType;
 use Ds\Set;
@@ -47,6 +48,16 @@ class Lexer
         }
 
         return null;
+    }
+
+    public function getTerminals() : Set
+    {
+        $terminals = array_map(function (TokenType $tokenType) {
+            return new Terminal($tokenType);
+        }, $this->tokenTypes->toArray());
+        $terminals[] = Terminal::epsilon();
+
+        return new Set($terminals);
     }
 
     public function nextToken(bool $skipF = true): Token

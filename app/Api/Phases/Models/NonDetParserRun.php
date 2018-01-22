@@ -4,14 +4,14 @@ namespace App\Api\Phases\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class LLRun extends Model
+class NonDetParserRun extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'll_runs';
+    protected $table = 'non_det_parser_runs';
 
     /**
      * The attributes that are mass assignable.

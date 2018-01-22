@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateLlRunsTable extends Migration
+class CreateNonDetParserRunsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,14 @@ class CreateLlRunsTable extends Migration
      */
     public function up()
     {
-        Schema::create('ll_runs', function (Blueprint $table) {
+        Schema::create('non_det_parser_runs', function (Blueprint $table) {
             $table->increments('id');
             $table->longText('content');
             $table->json('token_types');
             $table->json('grammar');
-            $table->json('stack');
+            $table->json('stack')->nullable();
             $table->integer('input_index')->default(0);
+            $table->json('parse_tree')->nullable();
             $table->timestamps();
         });
     }
@@ -31,6 +32,6 @@ class CreateLlRunsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ll_runs');
+        Schema::dropIfExists('non_det_parser_runs');
     }
 }

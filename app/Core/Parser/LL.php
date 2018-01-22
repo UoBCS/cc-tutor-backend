@@ -3,56 +3,16 @@
 namespace App\Core\Parser;
 
 use App\Core\Exceptions\ParserException;
-use App\Core\IO\InputStream;
-use App\Core\IO\ConsumableInput;
 use App\Core\Lexer\Lexer;
-use App\Core\Syntax\Grammar\Grammar;
 use App\Core\Syntax\Grammar\NonTerminal;
 use App\Core\Syntax\Grammar\Terminal;
-use App\Core\Syntax\Token\TokenType;
 use App\Infrastructure\Utils\Ds\Pair;
 use App\Infrastructure\Utils\Ds\Node;
 use Ds\Set;
 use Ds\Stack;
-use JsonSerializable;
 
-class LL implements JsonSerializable
+class LL extends NonDeterministicParser
 {
-    private $stack;
-    private $input;
-    private $lexer;
-    private $grammar;
-    private $parseTree = [
-        'root'       => null,
-        'stack'      => null,
-        'node_index' => 0
-    ];
-
-    public function __construct(Lexer $lexer = null, array $grammar = [])
-    {
-        $this->stack = new Stack();
-        $this->lexer = $lexer;
-        $this->input = $lexer === null ? new ConsumableInput() : new ConsumableInput($this->lexer->getTokens());
-        $this->grammar = new Grammar();
-
-        // Setup grammar object
-        if ($lexer !== null && count($grammar) > 0) {
-            $terminals = array_map(function (TokenType $tokenType) {
-                return new Terminal($tokenType);
-            }, $this->lexer->getTokenTypes()->toArray());
-            $terminals[] = new Terminal(); // epsilon
-
-            $this->grammar->setTerminals(new Set($terminals));
-            $this->grammar->setFromData($grammar);
-
-            $this->stack->push($this->grammar->getStartSymbol());
-            $this->parseTree['root'] = new Node(
-                new Pair($this->parseTree['node_index'], $this->grammar->getStartSymbol())
-            );
-            $this->parseTree['stack'] = new Stack([$this->parseTree['root']]);
-        }
-    }
-
     public static function fromData(array $data) : LL
     {
         $lexer = new Lexer($data['content'], $data['token_types']);
@@ -62,89 +22,6 @@ class LL implements JsonSerializable
         $parser->setParseTreeFromData($data['parse_tree']);
 
         return $parser;
-    }
-
-    public function getInput() : ConsumableInput
-    {
-        return $this->input;
-    }
-
-    public function setInput(ConsumableInput $input)
-    {
-        $this->input = $input;
-    }
-
-    public function setInputIndex(int $index)
-    {
-        $this->input->setIndex($index);
-    }
-
-    public function getStack() : Stack
-    {
-        return $this->stack;
-    }
-
-    public function setStack(Stack $stack)
-    {
-        $this->stack = $stack;
-    }
-
-    public function setStackFromData($data)
-    {
-        if ($data === null) {
-            return;
-        }
-
-        $this->stack = new Stack();
-
-        for ($i = count($data) - 1; $i >= 0; $i--) {
-            $gEntity = $data[$i];
-
-            $this->stack->push($this->grammar->getGrammarEntityByName($gEntity));
-        }
-    }
-
-    public function getGrammar() : Grammar
-    {
-        return $this->grammar;
-    }
-
-    public function getParseTree() : array
-    {
-        return $this->parseTree;
-    }
-
-    public function setParseTreeFromData($data)
-    {
-        // Recover node index
-        $this->parseTree['node_index'] = $data['node_index'];
-
-        // Recover parse tree
-        if ($data['tree'] !== null) {
-            $root = new Node();
-            $this->buildParseTree($root, $data['tree']);
-            $this->parseTree['root'] = $root;
-        }
-
-        // Recover stack
-        if ($data['stack'] !== null) {
-            $this->parseTree['stack'] = new Stack();
-
-            for ($i = count($data['stack']) - 1; $i >= 0; $i--) {
-                $nodeData = $data['stack'][$i];
-                $visitor = new ParseTreeSearchVisitor(new Pair(
-                    intval($nodeData[0]),
-                    $this->grammar->getGrammarEntityByName(isset($nodeData[1]['name']) ? $nodeData[1]['name'] : $nodeData[1])
-                ));
-                $stackNode = $root->accept($visitor);
-
-                if ($stackNode === null) {
-                    throw new ParserException('Could not load parse tree from the given data.');
-                }
-
-                $this->parseTree['stack']->push($stackNode);
-            }
-        }
     }
 
     public function predict(NonTerminal $lhs, $rhs)
@@ -197,7 +74,8 @@ class LL implements JsonSerializable
             }
         }
 
-        $inputTerminal = new Terminal($this->input->read()->getType());
+        //$inputTerminal = new Terminal($this->input->read()->getType());
+        $inputTerminal = $this->input->read()->toTerminal();
 
         if (!$this->stack->peek()->isTerminal()) {
             throw new ParserException('Could not match a terminal with a non-terminal.');
@@ -211,50 +89,5 @@ class LL implements JsonSerializable
         $this->input->advance();
 
         $this->parseTree['stack']->pop();
-    }
-
-    public function dbJsonSerialize()
-    {
-        $visitor = new ParseTreeSerializeVisitor();
-        $data = $this->jsonSerialize();
-
-        $data['parse_tree'] = [
-            'tree'       => $this->parseTree['root']->accept($visitor),
-            'stack'      => $this->parseTree['stack'],
-            'node_index' => $this->parseTree['node_index']
-        ];
-
-        return $data;
-    }
-
-    public function jsonSerialize()
-    {
-        $visitor = new ParseTreeSerializeVisitor(function ($pair) {
-            return $pair->getSnd()->getName();
-        });
-
-        return [
-            'stack'      => array_map(function ($ge) { return $ge->getName(); }, $this->stack->toArray()),
-            'input'      => $this->input,
-            'grammar'    => $this->grammar,
-            'parse_tree' => $this->parseTree['root']->accept($visitor)
-        ];
-    }
-
-    private function buildParseTree($root, $data)
-    {
-        $nodeData = $data['node'];
-
-        $root->setValue(new Pair(
-            intval($nodeData[0]),
-            $this->grammar->getGrammarEntityByName(isset($nodeData[1]['name']) ? $nodeData[1]['name'] : $nodeData[1])
-        ));
-
-        foreach ($data['children'] as $nodeObj) {
-            $node = new Node();
-            $root->addChild($node);
-
-            $this->buildParseTree($node, $nodeObj);
-        }
     }
 }

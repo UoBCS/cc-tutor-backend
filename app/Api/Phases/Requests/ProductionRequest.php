@@ -4,7 +4,7 @@ namespace App\Api\Phases\Requests;
 
 use App\Infrastructure\Http\ApiRequest;
 
-class LLRunMatchRequest extends ApiRequest
+class ProductionRequest extends ApiRequest
 {
     public function authorize()
     {
@@ -14,7 +14,9 @@ class LLRunMatchRequest extends ApiRequest
     public function rules()
     {
         return [
-            'run_id' => 'required|integer'
+            'run_id' => 'required|integer',
+            'lhs'    => 'required|string',
+            'rhs'    => 'array|nullable'
         ];
     }
 }
