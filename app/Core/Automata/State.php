@@ -54,8 +54,12 @@ class State implements JsonSerializable
         return $this->connectedStates;
     }
 
-    public function addTransition(self $state, array $cs = [])
+    public function addTransition(self $state, $cs = [])
     {
+        if (!is_array($cs)) {
+            $cs = [$cs];
+        }
+
         if (count($cs) === 0) {
             $this->_addTransition($state, 'ε');
         }
@@ -101,8 +105,8 @@ class State implements JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'id' => $this->id,
-            'data' => $this->data,
+            'id'    => $this->id,
+            'data'  => $this->data,
             'final' => $this->isFinal
         ];
     }

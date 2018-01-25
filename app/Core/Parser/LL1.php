@@ -17,51 +17,30 @@ use Ds\Set;
 use Ds\Stack;
 use Ds\Vector;
 
-class LL1
+class LL1 extends DeterministicParser
 {
-    private $stack;
-    private $input;
-    private $lexer;
-    private $grammar;
-    private $parseTree = [
-        'root'  => null,
-        'stack' => null
-    ];
-
-    private $parsingTable;
-
-    private $inspector;
-
     public function __construct(Lexer $lexer = null, array $grammar = [])
     {
-        $this->stack = new Stack();
-        $this->lexer = $lexer;
-        $this->input = $lexer === null ? new ConsumableInput() : new ConsumableInput($this->lexer->getTokens());
-        $this->grammar = new Grammar();
+        parent::__construct($lexer, $grammar);
+    }
 
-        if ($lexer !== null && count($grammar) > 0) {
-            // Prepare terminals
-            $terminals = array_map(function (TokenType $tokenType) {
-                return new Terminal($tokenType);
-            }, $this->lexer->getTokenTypes()->toArray());
-            $terminals[] = new Terminal();
+    public function initializeStack()
+    {
+        $this->stack->push($this->grammar->getStartSymbol());
+    }
 
-            $this->grammar->setTerminals(new Set($terminals));
+    public function initializeParseTree()
+    {
+        $this->parseTree['root'] = new Node($this->grammar->getStartSymbol());
+        $this->parseTree['stack'] = new Stack([$this->parseTree['root']]);
+    }
 
-            // Setup grammar object
-            $this->grammar->setFromData($grammar);
-
-            // Prepare stack and parse tree
-            $this->stack->push($this->grammar->getStartSymbol());
-            $this->parseTree['root'] = new Node($this->grammar->getStartSymbol());
-            $this->parseTree['stack'] = new Stack([$this->parseTree['root']]);
-
-            // Compute parsing table for non-interactive mode
-            $this->computeParsingTable();
-        }
-
-        $this->inspector = inspector();
-        $this->inspector->createStore('breakpoints', 'array');
+    public function getJsonParseTree() : array
+    {
+        $visitor = new ParseTreeSerializeVisitor(function ($node) {
+            return $node->getName();
+        });
+        return $this->parseTree['root']->accept($visitor);
     }
 
     public function parse() : bool
@@ -234,19 +213,6 @@ class LL1
         }
 
         return $followSet;
-    }
-
-    public function getInput() : ConsumableInput
-    {
-        return $this->input;
-    }
-
-    public function getJsonParseTree() : array
-    {
-        $visitor = new ParseTreeSerializeVisitor(function ($node) {
-            return $node->getName();
-        });
-        return $this->parseTree['root']->accept($visitor);
     }
 
     private function productionsWhereNonTerminalInRhs(NonTerminal $A) : Map

@@ -2,10 +2,7 @@
 
 namespace App\Core\Syntax\Grammar;
 
-use Ds\Hashable;
-use JsonSerializable;
-
-class NonTerminal implements GrammarEntity, Hashable, JsonSerializable
+class NonTerminal implements GrammarEntity
 {
     private $name;
 
@@ -53,4 +50,8 @@ class NonTerminal implements GrammarEntity, Hashable, JsonSerializable
     {
         return $this->name;
     }
+
+    public function __clone() {
+        return new NonTerminal($this->name);
+	}
 }

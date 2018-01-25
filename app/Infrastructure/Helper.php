@@ -81,3 +81,14 @@ function getGrammarEntityName($ge)
 {
     return $ge->getName();
 }
+
+function deepCloneArray($arr)
+{
+    $newArr = [];
+
+    foreach ($arr as $value) {
+        $newArr[] = is_array($value) ? deepCloneArray($value) : clone $value;
+    }
+
+    return $newArr;
+}

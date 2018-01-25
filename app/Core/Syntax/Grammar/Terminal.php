@@ -3,10 +3,8 @@
 namespace App\Core\Syntax\Grammar;
 
 use App\Core\Syntax\Token\TokenType;
-use Ds\Hashable;
-use JsonSerializable;
 
-class Terminal implements GrammarEntity, Hashable, JsonSerializable
+class Terminal implements GrammarEntity
 {
     const EPSILON = 'ε';
     private $tokenType = null;
@@ -101,5 +99,10 @@ class Terminal implements GrammarEntity, Hashable, JsonSerializable
     public function jsonSerialize()
     {
         return $this->tokenType === null ? ['name' => 'ε'] : $this->tokenType;
+    }
+
+    public function __clone()
+    {
+        return new Terminal($this->tokenType === null ? null : clone $this->tokenType);
     }
 }

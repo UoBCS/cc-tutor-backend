@@ -21,4 +21,8 @@ Route::prefix('syntax-analysis')->group(function () {
         Route::post('/shift', 'NonDetParserRunController@shift');
         Route::delete('/{id}', 'NonDetParserRunController@delete');
     });
+
+    Route::prefix('lr0')->group(function () {
+        Route::post('/parse', 'LR0Controller@parse');
+    });
 });

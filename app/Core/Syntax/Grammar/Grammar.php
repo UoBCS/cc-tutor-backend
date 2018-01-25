@@ -61,6 +61,13 @@ class Grammar implements JsonSerializable
         return false;
     }
 
+    public function addProduction(NonTerminal $lhs, $rhs)
+    {
+        $result = $this->productions->get($lhs, []);
+        $result[] = $rhs;
+        $this->productions->put($lhs, $result);
+    }
+
     public function setFromData(array $data)
     {
         $this->productions = new Map();
@@ -123,6 +130,11 @@ class Grammar implements JsonSerializable
         return $eoi !== null ? $eoi : $this->getTerminalByName('EOF');
     }
 
+    public function addTerminal(Terminal $terminal)
+    {
+        $this->terminals->add($terminal);
+    }
+
     public function setTerminals(Set $terminals)
     {
         $this->terminals = $terminals;
@@ -157,8 +169,8 @@ class Grammar implements JsonSerializable
     {
         $productions = [];
 
-        foreach ($this->productions as $key => $value) {
-            $productions[$key->getName()] = $value;
+        foreach ($this->productions as $lhs => $value) {
+            $productions[$lhs->getName()] = $value;
         }
 
         return [
@@ -166,5 +178,25 @@ class Grammar implements JsonSerializable
             'terminals'   => $this->terminals,
             'startSymbol' => $this->startSymbol
         ];
+    }
+
+    public function __clone()
+    {
+        $grammar = new Grammar();
+
+        $this->startSymbol = clone $this->startSymbol;
+        $grammar->setStartSymbol($this->startSymbol);
+
+        $terminals = new Set();
+        foreach ($this->terminals as $terminal) {
+            $terminals->add(clone $terminal);
+        }
+
+        $productions = new Map();
+        foreach ($this->productions as $lhs => $rhs) {
+            $productions->put(clone $lhs, deepCloneArray($rhs));
+        }
+
+        return $grammar;
     }
 }

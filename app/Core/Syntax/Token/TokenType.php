@@ -42,6 +42,17 @@ class TokenType implements IRegex, JsonSerializable, Hashable
         return $tt;
     }
 
+    public static function eoi()
+    {
+        $tt = new TokenType();
+        $tt->name = 'EOI';
+        $tt->regex = '';
+        $tt->skippable = true;
+        $tt->priority = 0;
+
+        return $tt;
+    }
+
     public function getRegex()
     {
         return $this->regex;
