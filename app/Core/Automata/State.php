@@ -49,9 +49,14 @@ class State implements JsonSerializable
         $this->isFinal = $isFinal;
     }
 
-    public function getConnectedStates()
+    public function getConnectedStates($c = null)
     {
-        return $this->connectedStates;
+        return $c === null ? $this->connectedStates : $this->connectedStates[$c];
+    }
+
+    public function hasTransition($c)
+    {
+        return array_key_exists($c, $this->connectedStates);
     }
 
     public function addTransition(self $state, $cs = [])

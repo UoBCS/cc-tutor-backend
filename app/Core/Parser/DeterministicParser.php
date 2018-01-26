@@ -37,6 +37,7 @@ abstract class DeterministicParser
             $this->grammar->setTerminals($this->lexer->getTerminals());
             $this->grammar->setFromData($grammar);
 
+            $this->initialize();
             $this->initializeStack();
             $this->initializeParseTree();
 
@@ -71,6 +72,11 @@ abstract class DeterministicParser
     public function getParseTree() : array
     {
         return $this->parseTree;
+    }
+
+    public function initialize()
+    {
+
     }
 
     abstract function initializeStack();

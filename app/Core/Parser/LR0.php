@@ -12,12 +12,14 @@ use App\Core\Syntax\Grammar\Grammar;
 use App\Core\Syntax\Grammar\GrammarEntity;
 use App\Core\Syntax\Grammar\NonTerminal;
 use App\Core\Syntax\Grammar\Terminal;
+use App\Core\Syntax\Token\Token;
 use App\Core\Syntax\Token\TokenType;
 use App\Infrastructure\Utils\Ds\Node;
 use Ds\Map;
 use Ds\Set;
 use Ds\Stack;
 use Ds\Vector;
+use Exception;
 
 class LR0 extends DeterministicParser
 {
@@ -28,9 +30,15 @@ class LR0 extends DeterministicParser
         parent::__construct($lexer, $grammar);
     }
 
+    public function initialize()
+    {
+        $this->buildItemsDfa();
+        $this->input->add(Token::eof());
+    }
+
     public function initializeStack()
     {
-        $this->stack = new Stack();
+        $this->stack = new Stack([$this->itemsDfa->getInitial()]);
     }
 
     public function initializeParseTree()
@@ -47,37 +55,77 @@ class LR0 extends DeterministicParser
 
     public function parse() : bool
     {
-        $this->buildItemsDfa();
+        $visitedStates = new Set();
+        $startSymbol = $this->grammar->getStartSymbol();
+
+        while (true) {
+            $state     = $this->stack->peek();
+            $stateData = $state->getData()->toArray();
+            $input     = $this->input->hasFinished() ? null : $this->input->read()->getType()->name;
+
+            if ($input === null
+            && $stateData[0]->dotIsAtTheEnd()
+            && $stateData[0]->getLhs()->equals($startSymbol)) {
+                break;
+            }
+
+            foreach ($stateData as $lrItem) {
+
+                $dotAtTheEnd = $lrItem->dotIsAtTheEnd();
+
+                // Shift
+                if ($input !== null
+                && !$dotAtTheEnd
+                && $lrItem->getNext()->getName() === $input
+                && $state->hasTransition($input)) {
+                    $this->stack->push($state->getConnectedStates($input)[0]);
+                    $this->input->advance();
+                    break;
+                }
+
+                // Reduce
+                try {
+                    $nonTerminal   = $lrItem->getLhs()->getName();
+                    $count         = count($lrItem->getRhs());
+                    $boundaryState = stackPeek($this->stack, $count);
+
+                    if ($dotAtTheEnd && $boundaryState->hasTransition($nonTerminal)) {
+                        stackPop($this->stack, $count);
+                        $this->stack->push($boundaryState->getConnectedStates($nonTerminal)[0]);
+                        break;
+                    }
+                } catch (Exception $e) {}
+
+            }
+        }
+
         return true;
     }
 
     private function augmentGrammar()
     {
-        $augmentedGrammar = clone $this->grammar;
-        $startSymbol = $augmentedGrammar->getStartSymbol();
+        $startSymbol = $this->grammar->getStartSymbol();
         $eoi = new Terminal(TokenType::eoi());
 
         $lhs = new NonTerminal($startSymbol->getName() . "'");
         $rhs = [$startSymbol, $eoi];
 
-        $augmentedGrammar->addTerminal($eoi);
-        $augmentedGrammar->addProduction($lhs, $rhs);
-        $augmentedGrammar->setStartSymbol($lhs);
-
-        return $augmentedGrammar;
+        $this->grammar->addTerminal($eoi);
+        $this->grammar->addProduction($lhs, $rhs);
+        $this->grammar->setStartSymbol($lhs);
     }
 
     private function buildItemsDfa()
     {
-        $grammar = $this->augmentGrammar();
-        $startSymbol = $grammar->getStartSymbol();
+        $this->augmentGrammar();
+        $startSymbol = $this->grammar->getStartSymbol();
 
         $lrItem = new LRItem(
             $startSymbol,
-            $grammar->getProductions($startSymbol)[0]
+            $this->grammar->getProductions($startSymbol)[0]
         );
 
-        $items = LR0Helper::itemClosure($lrItem, $grammar);
+        $items = LR0Helper::itemClosure($lrItem, $this->grammar);
 
         $initialState = new State();
         $initialState->setData($items);
@@ -91,7 +139,7 @@ class LR0 extends DeterministicParser
 
             foreach ($symbols as $grammarEntity) {
                 $destState = new State();
-                LR0Helper::setItems($destState, $sourceState, $grammarEntity, $grammar);
+                LR0Helper::setItems($destState, $sourceState, $grammarEntity, $this->grammar);
                 LR0Helper::setFinal($destState);
 
                 $addToVisited = true;

@@ -21,6 +21,11 @@ class ConsumableInput implements JsonSerializable
         return $this->input;
     }
 
+    public function add($value)
+    {
+        $this->input[] = $value;
+    }
+
     public function getIndex() : int
     {
         return $this->index;

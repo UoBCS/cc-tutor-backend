@@ -92,3 +92,23 @@ function deepCloneArray($arr)
 
     return $newArr;
 }
+
+function stackPeek($stack, $idx = 0)
+{
+    $stackArr = $stack->toArray();
+
+    for ($i = 0; $i < count($stackArr); $i++) {
+        if ($i === $idx) {
+            return $stackArr[$i];
+        }
+    }
+
+    throw new \Exception('Nothing to peek.');
+}
+
+function stackPop($stack, $count = 1)
+{
+    for ($i = 0; $i < $count; $i++) {
+        $stack->pop();
+    }
+}

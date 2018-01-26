@@ -23,7 +23,7 @@ class Token implements JsonSerializable
         $token = new Token();
         $token->text = '<EOF>';
         $token->isEOF = true;
-        $token->type = TokenType::ws(); //JavaTokenType.WS;
+        $token->type = TokenType::eoi();
         return $token;
     }
 
