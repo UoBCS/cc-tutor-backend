@@ -12,6 +12,9 @@ class State implements JsonSerializable
     protected $data;
     protected $isFinal = false;
     protected $connectedStates = [];
+    protected $jsonSerializeOptions = [
+        'showData' => true
+    ];
 
     public function __construct(int $id = null, array $data = [])
     {
@@ -107,13 +110,23 @@ class State implements JsonSerializable
         return $outStates->toArray(); //isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
     }
 
+    public function setJsonSerializeOptions(array $jsonSerializeOptions)
+    {
+        $this->jsonSerializeOptions = $jsonSerializeOptions;
+    }
+
     public function jsonSerialize()
     {
-        return [
+        $state = [
             'id'    => $this->id,
-            'data'  => $this->data,
             'final' => $this->isFinal
         ];
+
+        if ($this->jsonSerializeOptions['showData']) {
+            $state['data'] = $this->data;
+        }
+
+        return $state;
     }
 
     public function __toString()

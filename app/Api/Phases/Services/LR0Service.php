@@ -22,9 +22,10 @@ class LR0Service
         $parser->parse();
 
         return [
-            'tokens' => $parser->getInput()->getData(),
-            'dfa' => $parser->getItemsDfa()
-            //'breakpoints' => $this->inspector->getState('breakpoints')
+            'tokens'      => $parser->getInput()->getData(),
+            //'parse_tree' => $parser->getJsonParseTree(),
+            'dfa'         => $parser->getJsonItemsDfa(),
+            'breakpoints' => $this->inspector->getState('breakpoints')
         ];
     }
 }

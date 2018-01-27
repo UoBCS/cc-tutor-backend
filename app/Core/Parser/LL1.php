@@ -87,11 +87,6 @@ class LL1 extends DeterministicParser
         // TODO: check for input?
     }
 
-    public function computeParsingTable()
-    {
-
-    }
-
     public function first(GrammarEntity $X) : Set
     {
         $firstSet = new Set();

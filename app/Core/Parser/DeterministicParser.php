@@ -40,9 +40,6 @@ abstract class DeterministicParser
             $this->initialize();
             $this->initializeStack();
             $this->initializeParseTree();
-
-            // Compute parsing table for non-interactive mode
-            //$this->computeParsingTable();
         }
 
         $this->inspector = inspector();

@@ -13,6 +13,9 @@ class LRItem implements Hashable, JsonSerializable
     private $lhs;
     private $rhs;
     private $dotIndex;
+    private $jsonSerializeOptions = [
+        'showNamesOnly' => false
+    ];
 
     public function __construct(NonTerminal $lhs = null, array $rhs = [], $dotIndex = 0)
     {
@@ -109,11 +112,18 @@ class LRItem implements Hashable, JsonSerializable
         return $str;
     }
 
+    public function setJsonSerializeOptions($jsonSerializeOptions)
+    {
+        $this->jsonSerializeOptions = $jsonSerializeOptions;
+    }
+
     public function jsonSerialize()
     {
         return [
             'lhs'      => $this->lhs,
-            'rhs'      => $this->rhs,
+            'rhs'      => $this->jsonSerializeOptions['showNamesOnly']
+                            ? array_map(function ($ge) { return $ge->getName(); }, $this->rhs)
+                            : $this->rhs,
             'dotIndex' => $this->dotIndex
         ];
     }
