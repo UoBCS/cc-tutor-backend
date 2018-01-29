@@ -60,13 +60,10 @@ class LL1 extends DeterministicParser
             /* > */ ]);
 
             if ($grammarEntity->isTerminal()) {
-                /* > */ $this->inspector->breakpoint('init_match', null);
                 $result = $this->attemptMatch($grammarEntity);
-                /* > */ $this->inspector->breakpoint('end_match', null);
             } else {
                 /* > */ $this->inspector->breakpoint('init_predict', null);
                 $result = $this->attemptPredict($grammarEntity);
-                /* > */ $this->inspector->breakpoint('end_predict', null);
             }
 
             if ($result['status'] === 'DONE' || $result['status'] === 'ERROR') {
@@ -76,15 +73,15 @@ class LL1 extends DeterministicParser
 
         if ($result['status'] === 'ERROR') {
             /* > */ $this->inspector->breakpoint('parse_error', [
-            /* > */     'input_index' => $this->input->getIndex()
+            /* > */     'message' => $result['message']
             /* > */ ]);
 
             return false;
         }
 
-        return true;
+        /* > */ $this->inspector->breakpoint('parse_end', null);
 
-        // TODO: check for input?
+        return true;
     }
 
     public function first(GrammarEntity $X) : Set
@@ -132,11 +129,6 @@ class LL1 extends DeterministicParser
         $firstSet = new Set();
         $stopped = false;
 
-        /* > */ $this->inspector->breakpoint('init_first_all', [
-        /* > */     'alpha'     => array_map('getGrammarEntityName', $alpha), // TODO: transform to epsilon
-        /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
-        /* > */ ]);
-
         foreach ($alpha as $X_i) {
             $first = $this->first($X_i);
             $firstSet = $firstSet->merge(
@@ -145,14 +137,7 @@ class LL1 extends DeterministicParser
                 })
             );
 
-            /* > */ $this->inspector->breakpoint('first_all_accumulator', [
-            /* > */     'grammar_entity' => $X_i->getName(),
-            /* > */     'first'          => array_map('getGrammarEntityName', $first->toArray()),
-            /* > */     'first_set'      => array_map('getGrammarEntityName', $firstSet->toArray())
-            /* > */ ]);
-
             if (!$first->contains(Terminal::epsilon())) {
-                /* > */ $this->inspector->breakpoint('first_no_epsilon', null);
                 $stopped = true;
                 break;
             }
@@ -160,14 +145,6 @@ class LL1 extends DeterministicParser
 
         if (!$stopped) {
             $firstSet->add(Terminal::epsilon());
-
-            /* > */ $this->inspector->breakpoint('first_set_add_epsilon', [
-            /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
-            /* > */ ]);
-        } else {
-            /* > */ $this->inspector->breakpoint('end_first_all', [
-            /* > */     'first_set' => array_map('getGrammarEntityName', $firstSet->toArray())
-            /* > */ ]);
         }
 
         return $firstSet;
@@ -302,11 +279,26 @@ class LL1 extends DeterministicParser
             $firstAlpha = $this->firstAll($alpha);
 
             if ($firstAlpha->contains($firstInputTerminal)) {
+                /* > */ $this->inspector->breakpoint('first', [
+                /* > */     'alpha'          => array_map('getGrammarEntityName', $alpha), // TODO: transform to epsilon
+                /* > */     'first_set'      => array_map('getGrammarEntityName', $firstAlpha->toArray()),
+                /* > */     'input_terminal' => $firstInputTerminal->getName()
+                /* > */ ]);
+
                 $firstMatches[] = $alpha;
             }
 
             if ($firstAlpha->contains(Terminal::epsilon())) {
-                if ($this->follow($stackNonTerminal)->contains($firstInputTerminal)) {
+                $followSet = $this->follow($stackNonTerminal);
+
+                if ($followSet->contains($firstInputTerminal)) {
+                    /* > */ $this->inspector->breakpoint('follow', [
+                    /* > */     'non_terminal'   => $stackNonTerminal->getName(),
+                    /* > */     'first_set'      => array_map('getGrammarEntityName', $firstAlpha->toArray()),
+                    /* > */     'follow_set'     => array_map('getGrammarEntityName', $followSet->toArray()),
+                    /* > */     'input_terminal' => $firstInputTerminal->getName()
+                    /* > */ ]);
+
                     $followMatches[] = $alpha;
                 }
             }
@@ -336,7 +328,8 @@ class LL1 extends DeterministicParser
         $rhs = $matches[0];
 
         /* > */ $this->inspector->breakpoint('predict_chosen_production', [
-        /* > */     'production' => [$stackNonTerminal, array_map('getGrammarEntityName', $rhs)]
+        /* > */     'production' => [$stackNonTerminal, array_map('getGrammarEntityName', $rhs)],
+        /* > */     'type'       => count($firstMatches) > 0 ? 'first' : 'follow'
         /* > */ ]);
 
         for ($i = count($rhs) - 1; $i >= 0; $i--) {
