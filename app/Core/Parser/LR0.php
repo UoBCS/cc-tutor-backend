@@ -107,6 +107,10 @@ class LR0 extends DeterministicParser
         $visitedStates = new Set();
         $startSymbol = $this->grammar->getStartSymbol();
 
+        /* > */ $this->inspector->breakpoint('global_initialize', [
+        /* > */     'stack' => $this->stack->toArray()
+        /* > */ ]);
+
         while (true) {
             $state     = $this->stack->peek();
             $stateData = $state->getData()->toArray();
@@ -146,7 +150,7 @@ class LR0 extends DeterministicParser
                     /* > */         'dest' => $destState->getId()
                     /* > */     ],
                     /* > */     'input_index' => $input === null ? null : $this->input->getIndex(),
-                    /* > */     'stack' => $this->stack,
+                    /* > */     'stack' => $this->stack->toArray(),
                     /* > */     'parse_tree' => array_map($this->parseTreeTraversalFn, $this->parseTree['root'])
                     /* > */ ]);
                     break;
@@ -185,7 +189,7 @@ class LR0 extends DeterministicParser
                         /* > */         'dest' => $destState->getId()
                         /* > */     ],
                         /* > */     'input_index' => $input === null ? null : $this->input->getIndex(),
-                        /* > */     'stack' => $this->stack,
+                        /* > */     'stack' => $this->stack->toArray(),
                         /* > */     'parse_tree' => array_map($this->parseTreeTraversalFn, $this->parseTree['root'])
                         /* > */ ]);
                         break;
