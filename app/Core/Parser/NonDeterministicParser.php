@@ -147,7 +147,7 @@ class NonDeterministicParser implements JsonSerializable
     {
         $visitor = new ParseTreeSerializeVisitor();
         $data = $this->jsonSerialize();
-        $topDown = isset($this->parseTree['root']['children']);
+        $topDown = $this->parseTree['root'] instanceof Node;
 
         $bottomUpFn = function ($node) use ($visitor) {
             return $node->accept($visitor);
@@ -166,7 +166,7 @@ class NonDeterministicParser implements JsonSerializable
 
     public function jsonSerialize()
     {
-        $topDown = isset($this->parseTree['root']['children']);
+        $topDown = $this->parseTree['root'] instanceof Node;
 
         $visitor = new ParseTreeSerializeVisitor(function ($pair) {
             return $pair->getSnd()->getName();

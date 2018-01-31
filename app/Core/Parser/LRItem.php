@@ -120,11 +120,11 @@ class LRItem implements Hashable, JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'lhs'      => $this->lhs,
-            'rhs'      => $this->jsonSerializeOptions['showNamesOnly']
+            'lhs'       => $this->lhs,
+            'rhs'       => $this->jsonSerializeOptions['showNamesOnly']
                             ? array_map(function ($ge) { return $ge->getName(); }, $this->rhs)
                             : $this->rhs,
-            'dotIndex' => $this->dotIndex
+            'dot_index' => $this->dotIndex
         ];
     }
 
