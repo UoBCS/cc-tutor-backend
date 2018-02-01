@@ -7,7 +7,6 @@ use App\Infrastructure\Http\Crud\Controller;
 use App\Infrastructure\Http\Validation\SimpleValidationTrait;
 use Illuminate\Http\Request;
 
-
 class UserController extends Controller
 {
     use SimpleValidationTrait;
