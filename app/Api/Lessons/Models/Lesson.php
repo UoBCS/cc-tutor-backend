@@ -31,4 +31,9 @@ class Lesson extends Model
     {
         return $this->belongsTo('App\Api\Courses\Models\Course');
     }
+
+    public function isAccessible()
+    {
+
+    }
 }

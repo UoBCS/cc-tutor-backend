@@ -15,11 +15,10 @@ class CreateLessonsTable extends Migration
     {
         Schema::create('lessons', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('index')->unique();
+            $table->integer('index')->unsigned()->default(0)->unique();
             $table->string('title')->unique();
             $table->string('description');
-            $table->json('steps');
-            //$table->integer('progress')->unsigned();
+            $table->json('instructions');
             $table->integer('course_id')->unsigned();
             $table->foreign('course_id')
                     ->references('id')

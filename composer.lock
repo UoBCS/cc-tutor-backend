@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a61b73497d1278320ae0d73bc521b3a",
+    "content-hash": "059597bfb504c55062d342e04e56e05c",
     "packages": [
         {
             "name": "barryvdh/laravel-cors",
@@ -120,6 +120,48 @@
                 "stream_filter_register"
             ],
             "time": "2017-08-18T09:54:01+00:00"
+        },
+        {
+            "name": "czproject/git-php",
+            "version": "3.10.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/czproject/git-php.git",
+                "reference": "43c646c6c444d5196ff2dd387c60556193b82c7a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/czproject/git-php/zipball/43c646c6c444d5196ff2dd387c60556193b82c7a",
+                "reference": "43c646c6c444d5196ff2dd387c60556193b82c7a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "nette/tester": "~1.1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Jan Pecha",
+                    "email": "janpecha@email.cz"
+                }
+            ],
+            "description": "Library for work with Git repository in PHP.",
+            "keywords": [
+                "git"
+            ],
+            "time": "2017-09-07T09:26:57+00:00"
         },
         {
             "name": "defuse/php-encryption",

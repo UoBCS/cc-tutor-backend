@@ -15,8 +15,14 @@ class CreateUserCourseTable extends Migration
     {
         Schema::create('user_course', function (Blueprint $table) {
             $table->increments('id');
+
+            $table->integer('lesson_id')->unsigned();
             $table->integer('user_id')->unsigned();
             $table->integer('course_id')->unsigned();
+
+            $table->foreign('lesson_id')
+                    ->references('id')
+                    ->on('lessons');
 
             $table->foreign('user_id')
                     ->references('id')
@@ -27,6 +33,7 @@ class CreateUserCourseTable extends Migration
                     ->references('id')
                     ->on('courses')
                     ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

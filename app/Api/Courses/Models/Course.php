@@ -29,7 +29,7 @@ class Course extends Model
 
     public function users()
     {
-        return $this->belongsToMany('App\Api\Users\Models\User', 'user_course');
+        return $this->belongsToMany('App\Api\Users\Models\User', 'user_course')->withPivot('lesson_id');
     }
 
     public function lessons()

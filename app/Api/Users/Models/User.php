@@ -2,6 +2,7 @@
 
 namespace App\Api\Users\Models;
 
+use App\Api\Lessons\Models\Lesson;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Notifications\Notifiable;
@@ -32,6 +33,11 @@ class User extends Authenticatable
 
     public function courses()
     {
-        return $this->belongsToMany('App\Api\Courses\Models\Course', 'user_course');
+        return $this->belongsToMany('App\Api\Courses\Models\Course', 'user_course')->withPivot('lesson_id');
+    }
+
+    public function currentLesson($cid)
+    {
+        return Lesson::find($this->courses()->where('course_id', $cid)->first()->pivot->lesson_id);
     }
 }
