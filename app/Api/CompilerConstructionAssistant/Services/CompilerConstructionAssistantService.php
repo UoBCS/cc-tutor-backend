@@ -2,22 +2,19 @@
 
 namespace App\Api\CompilerConstructionAssistant\Services;
 
+use App\Api\CompilerConstructionAssistant\Exceptions\LessonNotFoundException;
+use App\Api\CompilerConstructionAssistant\Exceptions\UserNotSubscribedToCourse;
 use App\Api\CompilerConstructionAssistant\Repositories\CompilerConstructionAssistantRepository;
 use App\Api\Courses\Services\CourseService;
 use App\Api\Lessons\Services\LessonService;
-use Cz\Git\GitRepository;
-use HerokuClient\Client as HerokuClient;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception as SymfonyException;
 
 class CompilerConstructionAssistantService
 {
     private $repository;
     private $courseService;
     private $lessonService;
-    private $appDirectory;
-    private $appTestsDirectory;
-    private $coursesDirectory;
-    private $coursesTestsDirectory;
 
     public function __construct(
         CompilerConstructionAssistantRepository $repository,
@@ -27,42 +24,28 @@ class CompilerConstructionAssistantService
         $this->repository = $repository;
         $this->courseService = $courseService;
         $this->lessonService = $lessonService;
-
-        /*$this->heroku = new HerokuClient([
-            'apiKey' => config('cc_tutor.heroku.api_key')
-        ]);*/
-
-        //$this->herokuAppName = config('cc_tutor.heroku.app_name');
-
-        //$herokuGitUrl = $this->heroku->get('apps/' . $this->herokuAppName)->git_url;
-        //$this->herokuRepo = new GitRepository(storage_path('app/cctutor'));
-
-        $this->appDirectory = storage_path('app/cctutor/src/main/java/com/cctutor/app');
-        $this->appTestsDirectory = storage_path('app/cctutor/src/test/java/com/cctutor/app');
-        $this->coursesDirectory = joinPaths($this->appDirectory, 'courses');
-        $this->coursesTestsDirectory = joinPaths($this->appTestsDirectory, 'courses');
     }
 
     public function subscribeToCourse($user, $cid)
     {
-        // TODO: check if already related
         $lessons = $this->lessonService->getBy('course_id', $cid);
         $lesson  = $lessons->where('index', $lessons->min('index'))->first();
         $this->repository->relateUserAndCourse($user, $cid, ['lesson_id' => $lesson->id]);
 
         // Create course directory for user
         $course      = $this->courseService->getById($cid);
-        $courseTitle = $this->normalizeName($course->title);
         $username    = $this->normalizeName($user->name);
 
         // Copy main package
-        if (File::copyDirectory(joinPaths($this->coursesDirectory, $courseTitle), joinPaths($this->appDirectory, $username, $courseTitle))) {
-            $this->changeFilesPackage(joinPaths($this->appDirectory, $username, $courseTitle), 'courses', $username);
+        $coursePath = $this->repository->getCoursePath($course);
+        if (Storage::copyDirectory($this->repository->getBaseCoursePath($course), $coursePath)) {
+            $this->changeFilesPackage($coursePath, 'courses', $username);
         }
 
         // Copy test package
-        if (File::copyDirectory(joinPaths($this->coursesTestsDirectory, $courseTitle), joinPaths($this->appTestsDirectory, $username, $courseTitle))) {
-            $this->changeFilesPackage(joinPaths($this->appTestsDirectory, $username, $courseTitle), 'courses', $username);
+        $courseTestsPath = $this->repository->getCourseTestsPath($course);
+        if (Storage::copyDirectory($this->repository->getBaseCourseTestsPath($course), $courseTestsPath)) {
+            $this->changeFilesPackage($courseTestsPath, 'courses', $username);
         }
 
         return $this->getLessonData($user, $course, $lesson);
@@ -70,16 +53,13 @@ class CompilerConstructionAssistantService
 
     public function unsubscribeFromCourse($user, $cid)
     {
-        // TODO: check if not attached
         $this->repository->unrelateUserAndCourse($user, $cid);
 
         // Delete course directory for user
         $course      = $this->courseService->getById($cid);
-        $courseTitle = $this->normalizeName($course->title);
-        $username    = $this->normalizeName($user->name);
 
-        File::deleteDirectory(joinPaths($this->appDirectory, $username, $courseTitle));
-        File::deleteDirectory(joinPaths($this->appTestsDirectory, $username, $courseTitle));
+        Storage::deleteDirectory($this->repository->getCoursePath($course));
+        Storage::deleteDirectory($this->repository->getCourseTestsPath($course));
 
         return [
             'status' => true
@@ -88,20 +68,80 @@ class CompilerConstructionAssistantService
 
     public function getCurrentLesson($user, $cid)
     {
+        if (!$user->isSubscribedTo($cid)) {
+            throw new UserNotSubscribedToCourse();
+        }
+
         $course = $this->courseService->getById($cid);
         $lesson = $user->currentLesson($cid);
 
         return $this->getLessonData($user, $course, $lesson);
     }
 
-    public function saveLessonProgress($lid)
+    public function saveLessonProgress($cid, $lid, $data)
     {
-        return null;
+        if (!$user->isSubscribedTo($cid)) {
+            throw new UserNotSubscribedToCourse();
+        }
+
+        $course = $this->courseService->getById($cid);
+        $lesson = $this->lessonService->getById($lid);
+
+        if (!$this->saveLesson($course, $lesson, $data)) {
+            throw new SymfonyException\UnprocessableEntityHttpException('Could not save lesson');
+        }
+    }
+
+    public function nextLesson($user, $cid)
+    {
+        if (!$user->isSubscribedTo($cid)) {
+            throw new UserNotSubscribedToCourse();
+        }
+
+        $lesson = $user->nextLesson($cid);
+
+        if ($lesson === null) {
+            throw new LessonNotFoundException();
+        }
+
+        $user->courses()->updateExistingPivot($cid, ['lesson_id' => $lesson->id]);
+
+        $course = $this->courseService->getById($cid);
+        return $this->getLessonData($user, $course, $lesson);
+    }
+
+    public function submitLesson($cid, $lid, $data)
+    {
+        if (!$user->isSubscribedTo($cid)) {
+            throw new UserNotSubscribedToCourse();
+        }
+
+        $course = $this->courseService->getById($cid);
+        $lesson = $this->lessonService->getById($lid);
+
+        if (!$this->saveLesson($course, $lesson, $data)) {
+            throw new SymfonyException\UnprocessableEntityHttpException('Could not save lesson');
+        }
+
+        // Run tests
+    }
+
+    protected function saveLesson($course, $lesson, $data)
+    {
+        $lessonPath = $this->repository->getLessonPath($course, $lesson);
+
+        foreach ($data['files'] as $file) {
+            if (Storage::put(joinPaths($lessonPath, $file['name']), $file['content']) === false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function changeFilesPackage($directory, $fromSegment, $toSegment)
     {
-        $files = File::allFiles($directory);
+        $files = Storage::allFiles($directory);
         foreach ($files as $file) {
             $content = $file->getContents();
             $content = preg_replace("/(package com\.cctutor\.app\.)(courses)(.*;)/", "$1$toSegment$3", $content);
@@ -121,7 +161,7 @@ class CompilerConstructionAssistantService
             'instructions' => json_decode($lesson->instructions, true)
         ];
 
-        $files = File::allFiles(joinPaths($this->appDirectory, $username, $courseTitle, $lessonTitle));
+        $files = Storage::allFiles(joinPaths($this->appDirectory, $username, $courseTitle, $lessonTitle));
         foreach ($files as $file) {
             $outputData['files'][$file->getFilename()] = $file->getContents();
         }

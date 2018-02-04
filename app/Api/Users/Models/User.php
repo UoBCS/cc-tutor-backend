@@ -36,8 +36,21 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Api\Courses\Models\Course', 'user_course')->withPivot('lesson_id');
     }
 
+    public function isSubscribedTo($cid)
+    {
+        return $this->courses()->where('course_id', $cid)->first() !== null;
+    }
+
     public function currentLesson($cid)
     {
         return Lesson::find($this->courses()->where('course_id', $cid)->first()->pivot->lesson_id);
+    }
+
+    public function nextLesson($cid)
+    {
+        $currentLesson = $this->currentLesson($cid);
+        $newIndex = $currentLesson->index + 1;
+
+        return Lesson::where('index', $newIndex)->where('course_id', $cid)->first();
     }
 }

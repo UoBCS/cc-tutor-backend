@@ -2,6 +2,7 @@
 
 namespace App\Api\CompilerConstructionAssistant\Controllers;
 
+use App\Api\CompilerConstructionAssistant\Requests\LessonRequest;
 use App\Api\CompilerConstructionAssistant\Services\CompilerConstructionAssistantService;
 use App\Infrastructure\Http\Controller as BaseController;
 
@@ -35,20 +36,22 @@ class CompilerConstructionAssistantController extends BaseController
         return $this->response($result);
     }
 
-    public function saveLessonProgress($lid)
+    public function saveLessonProgress($cid, $lid, LessonRequest $request)
     {
-        $result = $this->service->saveLessonProgress($lid);
+        $this->service->saveLessonProgress($cid, $lid, $request->all());
+
+        return $this->response(null, 201);
+    }
+
+    public function nextLesson($cid)
+    {
+        $result = $this->service->nextLesson($this->user(), $cid);
 
         return $this->response($result);
     }
 
-    public function nextLesson()
+    public function submitLesson($cid, $lid, LessonRequest $request)
     {
-
-    }
-
-    public function submitLesson($cid, $lid)
-    {
-
+        $this->service->submitLesson($cid, $lid, $request->all());
     }
 }
