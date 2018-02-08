@@ -60,12 +60,16 @@ class CompilerConstructionAssistantRepository
         $lessonTitle = normalizeName($lesson->title);
         $username    = normalizeName($this->user->name);
 
-        return joinPaths($this->appTestsDirectory, $username, $courseTitle, $lessonTitle);
+        return joinPaths($this->appDirectory, $username, $courseTitle, $lessonTitle);
     }
 
     public function getLessonTestsPath($course, $lesson)
     {
+        $courseTitle = normalizeName($course->title);
+        $lessonTitle = normalizeName($lesson->title);
+        $username    = normalizeName($this->user->name);
 
+        return joinPaths($this->appTestsDirectory, $username, $courseTitle, $lessonTitle);
     }
 
     public function relateUserAndCourse($cid, $data = ['lesson_id' => 1])

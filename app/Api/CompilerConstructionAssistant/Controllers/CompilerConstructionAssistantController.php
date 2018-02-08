@@ -66,8 +66,8 @@ class CompilerConstructionAssistantController extends BaseController
 
     public function submitLesson($cid, $lid, LessonRequest $request)
     {
-        $this->service->submitLesson($this->user(), $cid, $lid, $request->all());
+        $result = $this->service->submitLesson($this->user(), $cid, $lid, $request->all());
 
-        return $this->response(null, 204);
+        return $this->response($result);
     }
 }

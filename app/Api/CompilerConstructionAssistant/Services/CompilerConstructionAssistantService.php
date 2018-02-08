@@ -140,7 +140,7 @@ class CompilerConstructionAssistantService
             throw new SymfonyException\UnprocessableEntityHttpException('Could not save lesson');
         }
 
-        // Run tests
+        return $this->runTests($user, $course, $lesson);
     }
 
     protected function saveLesson($course, $lesson, $data)
@@ -165,5 +165,21 @@ class CompilerConstructionAssistantService
 
             file_put_contents($file->getPathname(), $content);
         }
+    }
+
+    protected function runTests($user, $course, $lesson)
+    {
+        $courseTitle = normalizeName($course->title);
+        $lessonTitle = normalizeName($lesson->title);
+        $username    = normalizeName($user->name);
+
+        $output = [];
+        $exitCode = 0;
+        exec("mvn -Dtest='com.cctutor.app.$username.$courseTitle.$lessonTitle.**' test", $output, $exitCode);
+
+        return [
+            'output'    => $output,
+            'exit_code' => $exitCode
+        ];
     }
 }
