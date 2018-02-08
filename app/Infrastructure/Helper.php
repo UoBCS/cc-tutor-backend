@@ -113,7 +113,8 @@ function stackPop($stack, $count = 1)
     }
 }
 
-function joinPaths() {
+function joinPaths()
+{
     $paths = array();
 
     foreach (func_get_args() as $arg) {
@@ -121,4 +122,9 @@ function joinPaths() {
     }
 
     return preg_replace('#/+#','/',join('/', $paths));
+}
+
+function normalizeName($str)
+{
+    return strtolower(str_replace(' ', '', $str));
 }

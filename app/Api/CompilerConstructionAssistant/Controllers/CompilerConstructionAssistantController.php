@@ -15,6 +15,13 @@ class CompilerConstructionAssistantController extends BaseController
         $this->service = $service;
     }
 
+    public function getCourses()
+    {
+        $result = $this->service->getCourses($this->user());
+
+        return $this->response($result);
+    }
+
     public function subscribeToCourse($cid)
     {
         $result = $this->service->subscribeToCourse($this->user(), $cid);
@@ -29,6 +36,13 @@ class CompilerConstructionAssistantController extends BaseController
         return $this->response($result);
     }
 
+    public function getCourseLessons($cid)
+    {
+        $result = $this->service->getCourseLessons($this->user(), $cid);
+
+        return $this->response($result);
+    }
+
     public function getCurrentLesson($cid)
     {
         $result = $this->service->getCurrentLesson($this->user(), $cid);
@@ -38,7 +52,7 @@ class CompilerConstructionAssistantController extends BaseController
 
     public function saveLessonProgress($cid, $lid, LessonRequest $request)
     {
-        $this->service->saveLessonProgress($cid, $lid, $request->all());
+        $this->service->saveLessonProgress($this->user(), $cid, $lid, $request->all());
 
         return $this->response(null, 201);
     }
@@ -52,6 +66,8 @@ class CompilerConstructionAssistantController extends BaseController
 
     public function submitLesson($cid, $lid, LessonRequest $request)
     {
-        $this->service->submitLesson($cid, $lid, $request->all());
+        $this->service->submitLesson($this->user(), $cid, $lid, $request->all());
+
+        return $this->response(null, 204);
     }
 }

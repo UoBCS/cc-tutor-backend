@@ -5,6 +5,7 @@ namespace App\Api\CompilerConstructionAssistant\Repositories;
 use App\Api\CompilerConstructionAssistant\Exceptions\UserAlreadySubscribedToCourse;
 use App\Api\CompilerConstructionAssistant\Exceptions\UserNotSubscribedToCourse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class CompilerConstructionAssistantRepository
 {
@@ -25,39 +26,39 @@ class CompilerConstructionAssistantRepository
 
     public function getBaseCoursePath($course)
     {
-        $courseTitle = $this->normalizeName($course->title);
+        $courseTitle = normalizeName($course->title);
 
         return joinPaths($this->coursesDirectory, $courseTitle);
     }
 
     public function getBaseCourseTestsPath($course)
     {
-        $courseTitle = $this->normalizeName($course->title);
+        $courseTitle = normalizeName($course->title);
 
         return joinPaths($this->coursesTestsDirectory, $courseTitle);
     }
 
     public function getCoursePath($course)
     {
-        $courseTitle = $this->normalizeName($course->title);
-        $username    = $this->normalizeName($this->user->name);
+        $courseTitle = normalizeName($course->title);
+        $username    = normalizeName($this->user->name);
 
         return joinPaths($this->appDirectory, $username, $courseTitle);
     }
 
     public function getCourseTestsPath($course)
     {
-        $courseTitle = $this->normalizeName($course->title);
-        $username    = $this->normalizeName($this->user->name);
+        $courseTitle = normalizeName($course->title);
+        $username    = normalizeName($this->user->name);
 
         return joinPaths($this->appTestsDirectory, $username, $courseTitle);
     }
 
     public function getLessonPath($course, $lesson)
     {
-        $courseTitle = $this->normalizeName($course->title);
-        $lessonTitle = $this->normalizeName($lesson->title);
-        $username    = $this->normalizeName($this->user->name);
+        $courseTitle = normalizeName($course->title);
+        $lessonTitle = normalizeName($lesson->title);
+        $username    = normalizeName($this->user->name);
 
         return joinPaths($this->appTestsDirectory, $username, $courseTitle, $lessonTitle);
     }
@@ -67,25 +68,46 @@ class CompilerConstructionAssistantRepository
 
     }
 
-    public function relateUserAndCourse($user, $cid, $data = ['lesson_id' => 1])
+    public function relateUserAndCourse($cid, $data = ['lesson_id' => 1])
     {
-        $course = $user->courses()->where('id', $cid)->first();
+        $course = $this->user->courses()->where('course_id', $cid)->first();
 
         if ($course !== null) {
             throw new UserAlreadySubscribedToCourse();
         }
 
-        $user->courses()->attach($cid, $data);
+        $this->user->courses()->attach($cid, $data);
     }
 
-    public function unrelateUserAndCourse($user, $cid)
+    public function unrelateUserAndCourse($cid)
     {
-        $course = $user->courses()->where('id', $cid)->first();
+        $course = $this->user->courses()->where('course_id', $cid)->first();
 
         if ($course === null) {
             throw new UserNotSubscribedToCourse();
         }
 
-        $user->courses()->detach($cid);
+        $this->user->courses()->detach($cid);
+    }
+
+    public function getLessonData($course, $lesson)
+    {
+        $username    = normalizeName($this->user->name);
+        $courseTitle = normalizeName($course->title);
+        $lessonTitle = normalizeName($lesson->title);
+        $outputData  = [
+            'id'           => $lesson->id,
+            'title'        => $lesson->title,
+            'description'  => $lesson->description,
+            'files'        => [],
+            'instructions' => json_decode($lesson->instructions, true)
+        ];
+
+        $files = File::allFiles(joinPaths($this->appDirectory, $username, $courseTitle, $lessonTitle));
+        foreach ($files as $file) {
+            $outputData['files'][$file->getFilename()] = $file->getContents();
+        }
+
+        return $outputData;
     }
 }
