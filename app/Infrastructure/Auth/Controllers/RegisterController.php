@@ -25,7 +25,7 @@ class RegisterController extends Controller
         ];
 
         if ($data['teacher']) {
-            $retData['class_invitation_token'] = 'lol_just_a_test';
+            $retData['class_invitation_token'] = 'lol_just_a_test'; // TODO: generate token
         }
 
         return User::create($retData);

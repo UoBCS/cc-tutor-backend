@@ -31,14 +31,21 @@ class CompilerConstructionAssistantController extends BaseController
 
     public function unsubscribeFromCourse($cid)
     {
-        $result = $this->service->unsubscribeFromCourse($this->user(), $cid);
+        $this->service->unsubscribeFromCourse($this->user(), $cid);
 
-        return $this->response($result);
+        return $this->response(null, 204);
     }
 
     public function getCourseLessons($cid)
     {
         $result = $this->service->getCourseLessons($this->user(), $cid);
+
+        return $this->response($result);
+    }
+
+    public function getLesson($cid, $lid)
+    {
+        $result = $this->service->getLesson($this->user(), $cid, $lid);
 
         return $this->response($result);
     }

@@ -60,7 +60,7 @@ function peek($arr)
     return count($arr) - 1 < 0 ? null : $arr[count($arr) - 1];
 }
 
-function arrayFind($haystack, $needle, $useEquals = true)
+function arrayFind($haystack, $needle, $useEquals = true, $strict = true)
 {
     foreach ($haystack as $i => $val) {
         if ($useEquals) {
@@ -68,13 +68,24 @@ function arrayFind($haystack, $needle, $useEquals = true)
                 return $i;
             }
         } else {
-            if ($val === $needle) {
+            if ($strict ? $val === $needle : $val == $needle) {
                 return $i;
             }
         }
     }
 
     return -1;
+}
+
+function arrayRemove(&$haystack, $needle, $useEquals = true, $strict = true)
+{
+    $index = array_search($needle, $haystack); //arrayFind($haystack, $needle, $useEquals, $strict);
+
+    if ($index === -1) {
+        throw new \Exception('Index out of bounds'); // TODO: fix this
+    }
+
+    array_splice($haystack, $index, 1);
 }
 
 function getGrammarEntityName($ge)

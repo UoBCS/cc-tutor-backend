@@ -64,14 +64,10 @@ class CompilerConstructionAssistantService
         $this->repository->unrelateUserAndCourse($cid);
 
         // Delete course directory for user
-        $course      = $this->courseService->getById($cid);
+        $course = $this->courseService->getById($cid);
 
         File::deleteDirectory($this->repository->getCoursePath($course));
         File::deleteDirectory($this->repository->getCourseTestsPath($course));
-
-        return [
-            'status' => true
-        ];
     }
 
     public function getCourseLessons($user, $cid)
@@ -81,6 +77,18 @@ class CompilerConstructionAssistantService
         }
 
         return $this->courseService->getById($cid)->lessons()->get();
+    }
+
+    public function getLesson($user, $cid, $lid)
+    {
+        if (!$user->isSubscribedTo($cid)) {
+            throw new UserNotSubscribedToCourse();
+        }
+
+        $course = $this->courseService->getById($cid);
+        $lesson = $this->lessonService->getById($lid);
+
+        return $this->repository->getLessonData($course, $lesson);
     }
 
     public function getCurrentLesson($user, $cid)
@@ -173,9 +181,11 @@ class CompilerConstructionAssistantService
         $lessonTitle = normalizeName($lesson->title);
         $username    = normalizeName($user->name);
 
-        $output = [];
-        $exitCode = 0;
-        exec("mvn -Dtest='com.cctutor.app.$username.$courseTitle.$lessonTitle.**' test", $output, $exitCode);
+        $currentDir = getcwd();
+
+        chdir(storage_path('app/cctutor'));
+        exec("/opt/maven/bin/mvn -Dtest='com.cctutor.app.$username.$courseTitle.$lessonTitle.**' test 2>&1", $output, $exitCode);
+        chdir($currentDir);
 
         return [
             'output'    => $output,

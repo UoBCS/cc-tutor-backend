@@ -15,7 +15,7 @@ class AlgorithmService
         $this->inspector = inspector();
     }
 
-    public function regexToNfa($regex)
+    public function regexToNfa(string $regex) : array
     {
         $result = FiniteAutomaton::fromRegex(new PlainRegex($regex));
         return [
@@ -25,12 +25,20 @@ class AlgorithmService
         ];
     }
 
-    public function nfaToDfa($nfa)
+    public function nfaToDfa(array $nfa) : array
     {
         $result = FiniteAutomaton::fromArray($nfa)->toDfa();
         return [
             'breakpoints' => $this->inspector->getState('breakpoints'),
             'dfa'         => $result
+        ];
+    }
+
+    public function minimizeDfa(array $dfa) : array
+    {
+        $result = FiniteAutomaton::fromArray($dfa)->minimizeDfa();
+        return [
+            'dfa' => $result
         ];
     }
 }

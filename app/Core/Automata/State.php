@@ -11,6 +11,7 @@ class State implements JsonSerializable
     protected $id;
     protected $data;
     protected $isFinal = false;
+    protected $isError = false;
     protected $connectedStates = [];
     protected $jsonSerializeOptions = [
         'showData' => true
@@ -20,6 +21,13 @@ class State implements JsonSerializable
     {
         $this->id = $id;
         $this->data = $data;
+    }
+
+    public static function error() : self
+    {
+        $state = new State();
+        $state->isError = true;
+        return $state;
     }
 
     public function getId()
@@ -52,6 +60,11 @@ class State implements JsonSerializable
         $this->isFinal = $isFinal;
     }
 
+    public function isError()
+    {
+        return $this->isError;
+    }
+
     public function getConnectedStates($c = null)
     {
         return $c === null ? $this->connectedStates : $this->connectedStates[$c];
@@ -77,7 +90,18 @@ class State implements JsonSerializable
         }
     }
 
-    public function getState(string $c)
+    public function removeTransition(self $state, $c)
+    {
+        if (!isset($this->connectedStates[$c])) {
+            return;
+        }
+
+        $states = $this->connectedStates[$c];
+        arrayRemove($states, $state, false, true);
+        $this->connectedStates[$c] = $states;
+    }
+
+    public function getState(string $c) : array
     {
         if ($c === '[ANY]') {
             $set = new Set(array_flatten($this->connectedStates));
