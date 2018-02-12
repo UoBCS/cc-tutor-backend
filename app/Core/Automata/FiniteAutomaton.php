@@ -226,84 +226,83 @@ class FiniteAutomaton implements JsonSerializable
 
     public function minimizeDfa()
     {
-        if (!$this->isDeterministic()) {
-            throw new AutomatonException('The automaton is not deterministic');
-        }
+        while (true) {
+            if (!$this->isDeterministic()) {
+                //var_dump(json_encode($this->jsonSerialize()));
+                throw new AutomatonException('The automaton is not deterministic');
+            }
 
-        // Step 1. Remove unreachable states: this is already implemented by the nature of State
+            // 1. Get all reachable states
+            $states = [];
 
-        // Step 2. Collapse equivalent states
+            $fn = function ($s) use (&$states) {
+                $states[] = $s;
+            };
 
-        // 2.1. Get all reachable states
-        $states = [];
+            $this->traverse($fn, null, null, null);
 
-        $fn = function ($s) use (&$states) {
-            $states[] = $s;
-        };
+            if (!$this->isErrorStateUnreachable()) {
+                $states[] = $this->errorState;
+            }
 
-        $this->traverse($fn, null, null, null);
+            usort($states, function ($s1, $s2) {
+                return $s1->getId() - $s2->getId();
+            });
 
-        if (!$this->isErrorStateUnreachable()) {
-            $states[] = $this->errorState;
-        }
+            // 2. Construct table
+            $table = DiagTable::fromArray($states, $states, function ($s1, $s2) {
+                return $s1->isFinal() !== $s2->isFinal();
+            });
 
-        usort($states, function ($s1, $s2) {
-            return $s1->getId() - $s2->getId();
-        });
+            do {
+                $visited = new Set();
+                $finish = true;
 
-        // 2.2. Construct table
-        $table = DiagTable::fromArray($states, $states, function ($s1, $s2) {
-            return $s1->isFinal() !== $s2->isFinal();
-        });
-
-        do {
-            $visited = new Set();
-            $finish = true;
-
-            $table->findAndUpdate(function ($s1, $s2, $value) use ($visited, &$finish, $table) {
-                if ($value) {
-                    return false;
-                }
-
-                $chars1 = new Set($s1->getChars());
-                $chars2 = new Set($s2->getChars());
-                $chars = $chars1->union($chars2);
-
-                foreach ($chars as $char) {
-                    $connectedStates1 = $s1->getState($char);
-                    $connectedStates2 = $s2->getState($char);
-
-                    if ($table->get(
-                        count($connectedStates1) === 0 ? $this->errorState : $connectedStates1[0],
-                        count($connectedStates2) === 0 ? $this->errorState : $connectedStates2[0]
-                    )) {
-                        $finish = false;
-                        return true;
+                $table->findAndUpdate(function ($s1, $s2, $value) use ($visited, &$finish, $table) {
+                    if ($value) {
+                        return false;
                     }
-                }
 
-                return false;
-            }, true);
-        } while (!$finish);
+                    $chars1 = new Set($s1->getChars());
+                    $chars2 = new Set($s2->getChars());
+                    $chars = $chars1->union($chars2);
 
-        // Modify DFA
-        $unmarkedStates = $table->getHeaderPairs(false);
+                    foreach ($chars as $char) {
+                        $connectedStates1 = $s1->getState($char);
+                        $connectedStates2 = $s2->getState($char);
 
-        foreach ($unmarkedStates as $statesPair) {
-            $q0 = $statesPair[0];
-            $q1 = $statesPair[1];
+                        if ($table->get(
+                            count($connectedStates1) === 0 ? $this->errorState : $connectedStates1[0],
+                            count($connectedStates2) === 0 ? $this->errorState : $connectedStates2[0]
+                        )) {
+                            $finish = false;
+                            return true;
+                        }
+                    }
 
-            $dfa = $this->jsonSerialize();
+                    return false;
+                }, true);
+            } while (!$finish);
 
-            foreach ($dfa as $transition) {
-                if ($transition['dest'] === $q1) {
-                    $transition['src']->addTransition($q0, $transition['char']);
-                    $transition['src']->removeTransition($q1, $transition['char']);
-                }
+            // Modify DFA
+            $unmarkedStates = $table->getHeaderPairs(false);
+            $statesToRemove = new Set();
 
-                if ($transition['src'] === $q1) {
-                    $q0->addTransition($transition['dest'], $transition['char']);
-                    $q1->removeTransition($transition['dest'], $transition['char']);
+            if (count($unmarkedStates) === 0) {
+                break;
+            }
+
+            foreach ($unmarkedStates as $statesPair) {
+                $q0 = $statesPair[0];
+                $q1 = $statesPair[1];
+
+                $dfa = $this->jsonSerialize();
+
+                foreach ($dfa as $transition) {
+                    if ($transition['dest'] === $q1) {
+                        $transition['src']->addTransition($q0, $transition['char']);
+                        $transition['src']->removeTransition($q1, $transition['char']);
+                    }
                 }
             }
         }

@@ -90,6 +90,13 @@ class State implements JsonSerializable
         }
     }
 
+    public function removeAllTransitions(self $state)
+    {
+        foreach ($this->getChars() as $char) {
+            $this->removeTransition($state, $char);
+        }
+    }
+
     public function removeTransition(self $state, $c)
     {
         if (!isset($this->connectedStates[$c])) {
@@ -99,6 +106,11 @@ class State implements JsonSerializable
         $states = $this->connectedStates[$c];
         arrayRemove($states, $state, false, true);
         $this->connectedStates[$c] = $states;
+    }
+
+    public function resetTransitions()
+    {
+        $this->connectedStates = [];
     }
 
     public function getChars() : array
