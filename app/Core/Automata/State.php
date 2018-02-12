@@ -101,6 +101,12 @@ class State implements JsonSerializable
         $this->connectedStates[$c] = $states;
     }
 
+    public function getChars() : array
+    {
+        $charSet = new Set(array_keys($this->connectedStates));
+        return $charSet->toArray();
+    }
+
     public function getState(string $c) : array
     {
         if ($c === '[ANY]') {

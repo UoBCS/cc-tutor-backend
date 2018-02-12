@@ -17,11 +17,13 @@ class FiniteAutomaton implements JsonSerializable
 {
     private $initial;
     private $errorState;
+    private $alphabet;
 
-    public function __construct(State $initial)
+    public function __construct(State $initial, Set $alphabet = null)
     {
         $this->initial = $initial;
         $this->errorState = State::error();
+        $this->alphabet = $alphabet === null ? $this->generateAlphabet() : $alphabet;
     }
 
     public static function combine(array $fas)
@@ -110,6 +112,36 @@ class FiniteAutomaton implements JsonSerializable
         return $this->initial;
     }
 
+    public function generateAlphabet()
+    {
+        $chars = new Set();
+
+        $fn = function ($src, $c, $dest, $arr) use ($chars) {
+            $chars->add($c); // TODO: account for any and ranges
+        };
+
+        $this->traverse(null, null, $fn, null);
+
+        return $chars;
+    }
+
+    // TODO: account for any and ranges
+    public function isErrorStateUnreachable()
+    {
+        $foundDifference = false;
+
+        $fn = function ($s) use (&$foundDifference) {
+            $charSet = new Set($s->getChars());
+            if (!$this->alphabet->diff($charSet)->isEmpty()) {
+                $foundDifference = true;
+            }
+        };
+
+        $this->traverse($fn, null, null, null);
+
+        return !$foundDifference;
+    }
+
     public function isDeterministic()
     {
         $fn = function ($s, $data) {
@@ -122,7 +154,7 @@ class FiniteAutomaton implements JsonSerializable
             return $data && true;
         };
 
-        return $this->traverse($fn, true, NULL, NULL, 0);
+        return $this->traverse($fn, true, null, null, 0);
     }
 
     public function traverse($fn1, $data1, $fn2, $data2, $return = -1)
@@ -211,46 +243,31 @@ class FiniteAutomaton implements JsonSerializable
 
         $this->traverse($fn, null, null, null);
 
-        $states[] = $this->errorState;
+        if (!$this->isErrorStateUnreachable()) {
+            $states[] = $this->errorState;
+        }
+
+        usort($states, function ($s1, $s2) {
+            return $s1->getId() - $s2->getId();
+        });
 
         // 2.2. Construct table
         $table = DiagTable::fromArray($states, $states, function ($s1, $s2) {
-            return ($s1->isError() || $s2->isError()) || ($s1->isFinal() !== $s2->isFinal());
+            return $s1->isFinal() !== $s2->isFinal();
         });
 
         do {
             $visited = new Set();
             $finish = true;
 
-            $table->findAndUpdate(function ($i, $j, $s1, $s2, $value) use ($visited, &$finish, $table) {
-                /*if ($visited->contains(new Pair($i, $j)) || $visited->contains(new Pair($j, $i))) {
-                    return false;
-                }*/
-
+            $table->findAndUpdate(function ($s1, $s2, $value) use ($visited, &$finish, $table) {
                 if ($value) {
                     return false;
                 }
 
-                //$visited->add(new Pair($i, $j));
-                //$visited->add(new Pair($j, $i));
-
-                $chars1 = new Set(array_keys($s1->getConnectedStates()));
-                $chars2 = new Set(array_keys($s2->getConnectedStates()));
-
-                //var_dump($i, $chars1);
-                //var_dump($j, $chars2);
-
-                /*if (count($chars1) !== count($chars2)) {
-                    $finish = false;
-                    return true;
-                }*/
-
-                $chars = $chars1->union($chars2); //array_unio($chars1, $chars2);
-
-                /*if (count($chars) !== count($chars1)) {
-                    $finish = false;
-                    return true;
-                }*/
+                $chars1 = new Set($s1->getChars());
+                $chars2 = new Set($s2->getChars());
+                $chars = $chars1->union($chars2);
 
                 foreach ($chars as $char) {
                     $connectedStates1 = $s1->getState($char);
@@ -266,19 +283,17 @@ class FiniteAutomaton implements JsonSerializable
                 }
 
                 return false;
-            }, true, true, true);
+            }, true);
         } while (!$finish);
 
-        var_dump($table->getContents());
-
-        $unmarkedStates = $table->getHeaderPairs(false, true);
-
-        $dfa = $this->jsonSerialize();
-        //$newDfa = $dfa;
+        // Modify DFA
+        $unmarkedStates = $table->getHeaderPairs(false);
 
         foreach ($unmarkedStates as $statesPair) {
             $q0 = $statesPair[0];
             $q1 = $statesPair[1];
+
+            $dfa = $this->jsonSerialize();
 
             foreach ($dfa as $transition) {
                 if ($transition['dest'] === $q1) {
@@ -292,10 +307,6 @@ class FiniteAutomaton implements JsonSerializable
                 }
             }
         }
-
-        //var_dump($newDfa);
-
-        //$this->updateTransitions($this->initial, $newDfa);
 
         return $this->jsonSerialize();
     }

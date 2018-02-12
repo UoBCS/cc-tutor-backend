@@ -79,7 +79,7 @@ function arrayFind($haystack, $needle, $useEquals = true, $strict = true)
 
 function arrayRemove(&$haystack, $needle, $useEquals = true, $strict = true)
 {
-    $index = array_search($needle, $haystack); //arrayFind($haystack, $needle, $useEquals, $strict);
+    $index = array_search($needle, $haystack);
 
     if ($index === -1) {
         throw new \Exception('Index out of bounds'); // TODO: fix this

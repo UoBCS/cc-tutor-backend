@@ -41,18 +41,12 @@ class DiagTable
         return $table;
     }
 
-    public function findAndUpdate(callable $fn, $data, $symmetric = false, $ignoreDiagonal = false)
+    public function findAndUpdate(callable $fn, $data)
     {
-        for ($i = 0; $i < count($this->rowsHeader); $i++) {
-            for ($j = $symmetric ? $i + 1 : 0; $j < count($this->colsHeader); $j++) {
-                if ($ignoreDiagonal && $i === $j) {
-                    continue;
-                }
-
+        for ($i = 0; $i < count($this->rowsHeader) - 1; $i++) {
+            for ($j = $i + 1; $j < count($this->colsHeader); $j++) {
                 if (call_user_func(
                         $fn,
-                        $i,
-                        $j,
                         $this->rowsHeader[$i],
                         $this->colsHeader[$j],
                         $this->contents[$i][$j])
@@ -60,10 +54,7 @@ class DiagTable
 
                     // Update contents
                     $this->contents[$i][$j] = $data;
-
-                    if ($symmetric) {
-                        $this->contents[$j][$i] = $data;
-                    }
+                    $this->contents[$j][$i] = $data;
                 }
             }
         }
@@ -77,12 +68,12 @@ class DiagTable
         return $this->contents[$i][$j];
     }
 
-    public function getHeaderPairs($content, $symmetric = false)
+    public function getHeaderPairs($content)
     {
         $result = [];
 
-        for ($i = 0; $i < count($this->rowsHeader); $i++) {
-            for ($j = $symmetric ? $i + 1 : 0; $j < count($this->colsHeader); $j++) {
+        for ($i = 0; $i < count($this->rowsHeader) - 1; $i++) {
+            for ($j = $i + 1; $j < count($this->colsHeader); $j++) {
                 if ($this->contents[$i][$j] === $content) {
                     $result[] = [$this->rowsHeader[$i], $this->colsHeader[$j]];
                 }
@@ -94,6 +85,15 @@ class DiagTable
 
     public function getContents()
     {
-        return $this->contents;
+        $contents = [];
+
+        for ($i = 0; $i < count($this->contents) - 1; $i++) {
+            $contents[$i] = [];
+            for ($j = $i + 1; $j < count($this->contents); $j++) {
+                $contents[$i][$j - ($i + 1)] = $this->contents[$i][$j];
+            }
+        }
+
+        return $contents;
     }
 }
