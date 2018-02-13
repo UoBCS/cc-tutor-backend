@@ -14,6 +14,22 @@ class Environment implements JsonSerializble
         $this->bindings = $bindings;
     }
 
+    public static function fromJson(array $data) : self
+    {
+        $environment = new Environment();
+
+        foreach ($data as $binding) {
+            $environment->addBinding(Binding::fromJson($binding));
+        }
+
+        return $environment;
+    }
+
+    public function addBinding(Binding $binding)
+    {
+        $this->update($binding->getVariable(), $binding->getValue());
+    }
+
     public function update(Variable $x, Value $w)
     {
         foreach ($this->bindings as $binding) {

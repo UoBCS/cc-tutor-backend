@@ -16,6 +16,16 @@ class Binding implements JsonSerializble
         $this->value = $value;
     }
 
+    public static function fromJson(array $data) : self
+    {
+        return new Binding(
+            Variable::fromJson($data['variable']),
+            isset($data['value']['type']) && $data['value']['type'] === 'CONST'
+                    ? Constant::fromJson($data['value'])
+                    : Closure::fromJson($data['value'])
+        );
+    }
+
     public function getVariable() : Variable
     {
         return $this->variable;
@@ -38,7 +48,10 @@ class Binding implements JsonSerializble
 
     public function jsonSerialize()
     {
-        return null;
+        return [
+            'variable' => $this->variable,
+            'value'    => $this->value
+        ];
     }
 
     public function __clone()

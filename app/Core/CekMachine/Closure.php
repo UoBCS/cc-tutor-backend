@@ -16,6 +16,11 @@ class Closure implements JsonSerializble, Value
         $this->environment = $environment;
     }
 
+    public static function fromJson(array $data) : self
+    {
+        return new Closure(Func::fromData($data['function']), Environment::fromData($data['environment']));
+    }
+
     public function getFunction() : Func
     {
         return $this->function;
@@ -38,7 +43,10 @@ class Closure implements JsonSerializble, Value
 
     public function jsonSerialize()
     {
-        return null;
+        return [
+            'function'    => $this->function,
+            'environment' => $this->environment
+        ];
     }
 
     public function __clone()
