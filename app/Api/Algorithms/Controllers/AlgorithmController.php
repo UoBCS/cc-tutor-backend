@@ -15,18 +15,6 @@ class AlgorithmController extends Controller
         $this->service = $service;
     }
 
-    public function index()
-    {
-        return $this->response(
-            [
-                'supported_algorithms' => [
-                    'regex2nfa',
-                    'nfa2dfa'
-                ]
-            ]
-        );
-    }
-
     public function regexToNfa($regex)
     {
         // Regex validation
