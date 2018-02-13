@@ -2,6 +2,7 @@
 
 namespace App\Api\Algorithms\Controllers;
 
+use App\Api\Algorithms\Requests\CekMachineRunRequest;
 use App\Api\Algorithms\Requests\MinimizeDfaRequest;
 use App\Api\Algorithms\Requests\NfaToDfaRequest;
 use App\Api\Algorithms\Services\AlgorithmService;
@@ -30,5 +31,10 @@ class AlgorithmController extends Controller
     public function minimizeDfa(MinimizeDfaRequest $request)
     {
         return $this->response($this->service->minimizeDfa($request->input('dfa')));
+    }
+
+    public function cekMachineRun(CekMachineRunRequest $request)
+    {
+        return $this->response($this->service->cekMachineRun($request->input('cek_machine')));
     }
 }

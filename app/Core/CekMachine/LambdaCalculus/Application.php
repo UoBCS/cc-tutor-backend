@@ -65,7 +65,11 @@ class Application extends Expression implements Hashable, JsonSerializble
 
     public function jsonSerialize()
     {
-
+        return [
+            'type'     => 'APPL',
+            'function' => $this->function,
+            'argument' => $this->argument
+        ];
     }
 
     public function __toString()

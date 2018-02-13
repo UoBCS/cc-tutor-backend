@@ -41,4 +41,9 @@ class AlgorithmService
             'dfa' => $result
         ];
     }
+
+    public function cekMachineRun(array $initialMachineState) : array
+    {
+
+    }
 }
