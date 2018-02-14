@@ -6,7 +6,7 @@ use App\Core\CekMachine\Value;
 use Ds\Hashable;
 use JsonSerializable;
 
-class Constant extends Expression implements Hashable, JsonSerializble, Value
+class Constant extends Expression implements Hashable, JsonSerializable, Value
 {
     private $value;
 
@@ -15,17 +15,17 @@ class Constant extends Expression implements Hashable, JsonSerializble, Value
         $this->value = $value;
     }
 
-    public function reducible()
+    public function reducible() : bool
     {
         return false;
     }
 
-    public function reduce()
+    public function reduce() : Expression
     {
         return this;
     }
 
-    public function deepReduce()
+    public function deepReduce() : Expression
     {
         return this;
     }
@@ -75,7 +75,7 @@ class Constant extends Expression implements Hashable, JsonSerializble, Value
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

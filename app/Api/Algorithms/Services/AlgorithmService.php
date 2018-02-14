@@ -3,6 +3,7 @@
 namespace App\Api\Algorithms\Services;
 
 use App\Core\Automata\FiniteAutomaton;
+use App\Core\CekMachine\CekMachine;
 use App\Core\Inspector;
 use App\Core\Syntax\Regex\PlainRegex;
 
@@ -42,8 +43,18 @@ class AlgorithmService
         ];
     }
 
+    public function cekMachineNextStep(array $initialMachineState) : array
+    {
+        $machine = CekMachine::fromJson($initialMachineState);
+        $machine->nextStep();
+
+        return $machine->jsonSerialize();
+    }
+
     public function cekMachineRun(array $initialMachineState) : array
     {
+        $machine = CekMachine::fromJson($initialMachineState);
 
+        return $machine->run();
     }
 }

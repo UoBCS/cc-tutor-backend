@@ -2,16 +2,36 @@
 
 namespace App\Core\CekMachine;
 
+use App\Core\CekMachine\LambdaCalculus\Expression;
 use App\Infrastructure\Utils\Ds\Pair;
 use JsonSerializable;
 
-class Frame implements JsonSerializble
+class Frame implements JsonSerializable
 {
     private $content;
 
     public function __construct(Pair $content)
     {
         $this->content = $content;
+    }
+
+    public static function fromJson(array $data) : self
+    {
+        if ($data[0] === null) {
+            $pair = new Pair($data[0], new Pair(
+                Expression::fromJson($data[1]['expression']),
+                Environment::fromJson($data[1]['environment'])
+            ));
+
+            return new Frame($pair);
+        }
+
+        $pair = new Pair(
+            $data[1]['type'] === 'CONST' ? Expression::fromJson($data[1]) : Closure::fromJson($data[1]),
+            null
+        );
+
+        return new Frame($pair);
     }
 
     public function getContent() : Pair
@@ -21,14 +41,14 @@ class Frame implements JsonSerializble
 
     public function jsonSerialize()
     {
-        return null;
+        return $this->content->jsonSerialize();
     }
 
     public function __clone()
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

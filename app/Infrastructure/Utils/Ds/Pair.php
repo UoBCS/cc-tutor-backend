@@ -58,7 +58,7 @@ class Pair implements Hashable, JsonSerializable
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

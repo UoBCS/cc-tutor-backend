@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Core\CekMachine\LambdaCalculus;
-use Ds\Hashable;
+
 use Ds\Set;
 use JsonSerializable;
 
-class Application extends Expression implements Hashable, JsonSerializble
+class Application extends Expression implements JsonSerializable
 {
     private $function;
     private $argument;
@@ -74,6 +74,7 @@ class Application extends Expression implements Hashable, JsonSerializble
 
     public function __toString()
     {
+        return '';
         /*StringBuilder apply = new StringBuilder();
         if (this.function instanceof Function) {
             apply.append('(').append(this.function.toString()).append(')');
@@ -93,7 +94,7 @@ class Application extends Expression implements Hashable, JsonSerializble
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

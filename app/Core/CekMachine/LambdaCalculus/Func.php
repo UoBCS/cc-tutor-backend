@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Core\CekMachine\LambdaCalculus;
+
 use JsonSerializable;
 
-class Func extends Expression implements JsonSerializble
+class Func extends Expression implements JsonSerializable
 {
     private $name;
     private $body;
@@ -33,12 +34,12 @@ class Func extends Expression implements JsonSerializble
         return new Func($this->name, $this->body->deepReduce());
     }
 
-    public function getName() : string
+    public function getName() : Variable
     {
         return $this->name;
     }
 
-    public function setName(string $name)
+    public function setName(Variable $name)
     {
         $this->name = $name;
     }
@@ -57,8 +58,8 @@ class Func extends Expression implements JsonSerializble
     {
         return [
             'type' => 'FUNC',
-            'name' => $this->name,
-            'body' => $this->body
+            'name' => $this->name->jsonSerialize(),
+            'body' => $this->body->jsonSerialize()
         ];
     }
 
@@ -71,7 +72,7 @@ class Func extends Expression implements JsonSerializble
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

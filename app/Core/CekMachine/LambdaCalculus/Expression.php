@@ -18,7 +18,7 @@ abstract class Expression
 
             case 'VAR': return new Variable($data['name']);
 
-            case 'CONST': return new Constant(self::fromJson($data['value']));
+            case 'CONST': return new Constant($data['value']);
 
             case 'FUNC': return new Func(self::fromJson($data['name']), self::fromJson($data['body']));
 

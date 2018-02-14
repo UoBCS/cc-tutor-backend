@@ -2,14 +2,16 @@
 
 namespace App\Core\CekMachine;
 
+use App\Core\CekMachine\LambdaCalculus\Application;
+use App\Core\CekMachine\LambdaCalculus\Expression;
+use App\Core\CekMachine\LambdaCalculus\Func;
+use App\Core\CekMachine\LambdaCalculus\Variable;
 use App\Core\Exceptions\CekMachineException;
 use App\Infrastructure\Utils\Ds\Pair;
-use LambdaCalculus\Application;
-use LambdaCalculus\Variable;
 use Ds\Stack;
 use JsonSerializable;
 
-class CekMachine implements JsonSerializble
+class CekMachine implements JsonSerializable
 {
     private $control;
     private $environment;
@@ -20,6 +22,23 @@ class CekMachine implements JsonSerializble
         $this->control = $control;
         $this->environment = $environment;
         $this->continuation = $continuation;
+    }
+
+    public static function fromJson(array $data) : self
+    {
+        $control = isset($data['control']['type'])
+                    ? Expression::fromJson($data['control'])
+                    : Closure::fromJson($data['control']);
+
+        $environment = Environment::fromJson($data['environment']);
+
+        $continuation = new Stack();
+
+        for ($i = count($data['continuation']) - 1; $i >= 0; $i--) {
+            $continuation->push(Frame::fromJson($data['continuation'][$i]));
+        }
+
+        return new CekMachine($control, $environment, $continuation);
     }
 
     public function getControl()
@@ -37,11 +56,30 @@ class CekMachine implements JsonSerializble
         return $this->continuation;
     }
 
+    public function run()
+    {
+        $steps = [$this->jsonSerialize()];
+
+        while (true) {
+            $this->nextStep();
+
+            $steps[] = $this->jsonSerialize();
+
+            if ($this->control instanceof Value && $this->continuation->isEmpty()) {
+                break;
+            }
+        }
+
+        return $steps;
+    }
+
     public function nextStep()
     {
-        if ($this->control instanceof Variable) {
+        $control = clone $this->control;
 
-            $value = $this->environment->lookup($this->control);
+        if ($control instanceof Variable) {
+
+            $value = $this->environment->lookup($control);
 
             if ($value === null) {
                 throw new CekMachineException('No variable in the environment.');
@@ -49,32 +87,34 @@ class CekMachine implements JsonSerializble
 
             $this->control = $value;
 
-        } else if ($this->control instanceof Application) {
+        } else if ($control instanceof Application) {
 
             $frame = new Frame(new Pair(null, new Pair(
-                clone $this->control->getArgument(),
+                $this->control->getArgument(),
                 clone $this->environment
             )));
 
             $this->continuation->push($frame);
-            $this->control = $this->control->getFunction();
+            $this->control = $control->getFunction();
 
-        } else if ($this->control instanceof Func) {
+        } else if ($control instanceof Func) {
 
-            $this->control = new Closure(clone $this->control, clone $this->environment);
+            $this->control = new Closure($control, clone $this->environment);
 
-        } else if ($this->control instanceof Value) {
+        } else if ($control instanceof Value) {
 
             $frame = $this->continuation->peek();
+            $frameContent = clone $frame->getContent();
 
-            if ($frame->getFst() === null) {
-                $this->environment = clone $frame->getSnd()->getSnd();
+            if ($frameContent->getFst() === null) {
+                $this->environment = $frameContent->getSnd()->getSnd();
                 $this->continuation->pop();
-                $this->continuation->push(new Frame(new Pair(clone $this->control, null)));
-            } else if ($frame->getFst() instanceof Closure) {
-                $function = $frame->getFst()->getFunction();
-                $environment = $frame->getFst()->getEnvironment();
-                $environment->update($function->getName(), clone $this->control);
+                $this->continuation->push(new Frame(new Pair($control, null)));
+                $this->control = $frameContent->getSnd()->getFst();
+            } else if ($frameContent->getFst() instanceof Closure) {
+                $function = $frameContent->getFst()->getFunction();
+                $environment = $frameContent->getFst()->getEnvironment();
+                $environment->update($function->getName(), $control);
 
                 $this->control = $function->getBody();
                 $this->environment = $environment;
@@ -88,6 +128,10 @@ class CekMachine implements JsonSerializble
 
     public function jsonSerialize()
     {
-        return null;
+        return [
+            'control'      => $this->control->jsonSerialize(),
+            'environment'  => $this->environment->jsonSerialize(),
+            'continuation' => $this->continuation->jsonSerialize()
+        ];
     }
 }

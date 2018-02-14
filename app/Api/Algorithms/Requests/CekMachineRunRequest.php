@@ -11,22 +11,13 @@ class CekMachineRunRequest extends ApiRequest
         return true;
     }
 
-    /*
-    cek_machine: {
-        control: {
-            type: 'VAR',
-            name: 'x'
-        }
-    }
-    */
-
     public function rules()
     {
         return [
             'cek_machine'              => 'required|array',
             'cek_machine.control'      => 'required|array',
-            'cek_machine.environment'  => 'required|array',
-            'cek_machine.continuation' => 'required|array'
+            'cek_machine.environment'  => 'array',
+            'cek_machine.continuation' => 'array'
         ];
     }
 }

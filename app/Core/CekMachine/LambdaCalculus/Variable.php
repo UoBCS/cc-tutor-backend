@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Core\CekMachine\LambdaCalculus;
+
 use Ds\Hashable;
 use JsonSerializable;
 
-class Variable extends Expression implements Hashable, JsonSerializble
+class Variable extends Expression implements Hashable, JsonSerializable
 {
     private $name;
 
@@ -13,17 +14,17 @@ class Variable extends Expression implements Hashable, JsonSerializble
         $this->name = $name;
     }
 
-    public function reducible()
+    public function reducible() : bool
     {
         return false;
     }
 
-    public function reduce()
+    public function reduce() : Expression
     {
         return this;
     }
 
-    public function deepReduce()
+    public function deepReduce() : Expression
     {
         return this;
     }
@@ -73,7 +74,7 @@ class Variable extends Expression implements Hashable, JsonSerializble
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

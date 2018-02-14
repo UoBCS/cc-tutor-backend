@@ -2,10 +2,10 @@
 
 namespace App\Core\CekMachine;
 
-use LambdaCalculus\Func;
+use App\Core\CekMachine\LambdaCalculus\Func;
 use JsonSerializable;
 
-class Closure implements JsonSerializble, Value
+class Closure implements JsonSerializable, Value
 {
     private $function;
     private $environment;
@@ -44,6 +44,7 @@ class Closure implements JsonSerializble, Value
     public function jsonSerialize()
     {
         return [
+            'type'        => 'CLOSURE',
             'function'    => $this->function,
             'environment' => $this->environment
         ];
@@ -53,7 +54,7 @@ class Closure implements JsonSerializble, Value
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

@@ -2,10 +2,10 @@
 
 namespace App\Core\CekMachine;
 
-use LambdaCalculus\Variable;
+use App\Core\CekMachine\LambdaCalculus\Variable;
 use JsonSerializable;
 
-class Binding implements JsonSerializble
+class Binding implements JsonSerializable
 {
     private $variable;
     private $value;
@@ -20,9 +20,9 @@ class Binding implements JsonSerializble
     {
         return new Binding(
             Variable::fromJson($data['variable']),
-            isset($data['value']['type']) && $data['value']['type'] === 'CONST'
-                    ? Constant::fromJson($data['value'])
-                    : Closure::fromJson($data['value'])
+            $data['value']['type'] === 'CONST'
+                ? Constant::fromJson($data['value'])
+                : Closure::fromJson($data['value'])
         );
     }
 
@@ -49,8 +49,8 @@ class Binding implements JsonSerializble
     public function jsonSerialize()
     {
         return [
-            'variable' => $this->variable,
-            'value'    => $this->value
+            'variable' => $this->variable->jsonSerialize(),
+            'value'    => $this->value->jsonSerialize()
         ];
     }
 
@@ -58,7 +58,7 @@ class Binding implements JsonSerializble
     {
         foreach ($this as $key => $value) {
             if (is_object($value)) {
-                $this->$key = clone $this->key;
+                $this->$key = clone $this->$key;
             } else if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $arrayKey => $arrayValue) {

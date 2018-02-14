@@ -18,23 +18,38 @@ class AlgorithmController extends Controller
 
     public function regexToNfa($regex)
     {
-        // Regex validation
+        // TODO: Regex validation
 
-        return $this->response($this->service->regexToNfa($regex));
+        $result = $this->service->regexToNfa($regex);
+
+        return $this->response($result);
     }
 
     public function nfaToDfa(NfaToDfaRequest $request)
     {
-        return $this->response($this->service->nfaToDfa($request->input('nfa')));
+        $result = $this->service->nfaToDfa($request->input('nfa'));
+
+        return $this->response($result);
     }
 
     public function minimizeDfa(MinimizeDfaRequest $request)
     {
-        return $this->response($this->service->minimizeDfa($request->input('dfa')));
+        $result = $this->service->minimizeDfa($request->input('dfa'));
+
+        return $this->response($result);
+    }
+
+    public function cekMachineNextStep(CekMachineRunRequest $request)
+    {
+        $result = $this->service->cekMachineNextStep($request->input('cek_machine'));
+
+        return $this->response($result);
     }
 
     public function cekMachineRun(CekMachineRunRequest $request)
     {
-        return $this->response($this->service->cekMachineRun($request->input('cek_machine')));
+        $result = $this->service->cekMachineRun($request->input('cek_machine'));
+
+        return $this->response($result);
     }
 }
