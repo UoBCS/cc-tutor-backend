@@ -56,6 +56,7 @@ class Lexer
             return new Terminal($tokenType);
         }, $this->tokenTypes->toArray());
         $terminals[] = Terminal::epsilon();
+        $terminals[] = new Terminal(TokenType::eoi());
 
         return new Set($terminals);
     }

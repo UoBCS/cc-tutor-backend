@@ -5,6 +5,7 @@ namespace App\Core\CekMachine;
 use App\Core\CekMachine\LambdaCalculus\Application;
 use App\Core\CekMachine\LambdaCalculus\Expression;
 use App\Core\CekMachine\LambdaCalculus\Func;
+use App\Core\CekMachine\LambdaCalculus\Lambda;
 use App\Core\CekMachine\LambdaCalculus\Variable;
 use App\Core\Exceptions\CekMachineException;
 use App\Infrastructure\Utils\Ds\Pair;
@@ -26,9 +27,15 @@ class CekMachine implements JsonSerializable
 
     public static function fromJson(array $data) : self
     {
-        $control = isset($data['control']['type'])
-                    ? Expression::fromJson($data['control'])
-                    : Closure::fromJson($data['control']);
+        $control = null;
+
+        if (is_string($data['control'])) {
+            $control = Lambda::parse($data['control']);
+        } else {
+            $control = isset($data['control']['type'])
+                        ? Expression::fromJson($data['control'])
+                        : Closure::fromJson($data['control']);
+        }
 
         $environment = Environment::fromJson($data['environment']);
 

@@ -4,6 +4,13 @@ namespace App\Core\CekMachine\LambdaCalculus;
 
 class Lambda
 {
+    public static function parse(string $content) : Expression
+    {
+        $parser = new LambdaParser($content);
+
+        return $parser->parse();
+    }
+
     public static function var(string $name) : Variable
     {
         return new Variable($name);

@@ -2,6 +2,7 @@
 
 namespace App\Core\IO;
 
+use App\Core\Syntax\Token\Token;
 use Exception;
 use JsonSerializable;
 
@@ -44,7 +45,7 @@ class ConsumableInput implements JsonSerializable
     public function read()
     {
         if ($this->hasFinished()) {
-            throw new Exception('Cannot read input.');
+            return Token::eof();
         }
 
         return $this->input[$this->index];

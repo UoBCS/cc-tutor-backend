@@ -24,6 +24,11 @@ class LL1 extends DeterministicParser
         parent::__construct($lexer, $grammar);
     }
 
+    public function initialize()
+    {
+        $this->input->add(Token::eof());
+    }
+
     public function initializeStack()
     {
         $this->stack->push($this->grammar->getStartSymbol());
@@ -154,7 +159,6 @@ class LL1 extends DeterministicParser
     {
         $followSet = new Set();
 
-        // TODO: check this
         if ($A->equals($this->grammar->getStartSymbol())) {
             $followSet->add($this->grammar->getEndOfInputTerminal());
         }

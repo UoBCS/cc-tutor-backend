@@ -15,7 +15,7 @@ class CekMachineRunRequest extends ApiRequest
     {
         return [
             'cek_machine'              => 'required|array',
-            'cek_machine.control'      => 'required|array',
+            'cek_machine.control'      => 'required',
             'cek_machine.environment'  => 'array',
             'cek_machine.continuation' => 'array'
         ];
