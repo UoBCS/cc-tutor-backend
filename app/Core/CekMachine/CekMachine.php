@@ -156,7 +156,7 @@ class CekMachine implements JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'control'      => $this->control->jsonSerialize(),
+            'control'      => $this->control,
             'environment'  => $this->environment->jsonSerialize(),
             'continuation' => $this->continuation->jsonSerialize()
         ];
