@@ -65,14 +65,21 @@ class CekMachine implements JsonSerializable
 
     public function run()
     {
-        $steps = [$this->jsonSerialize()];
+        $steps = [];
+        $current = ['data' => $this->jsonSerialize()];
 
         while (true) {
-            $this->nextStep();
+            $action = $this->nextStep();
 
-            $steps[] = $this->jsonSerialize();
+            $current['label'] = $action;
+
+            $steps[] = $current;
+
+            $current['label'] = null;
+            $current['data'] = $this->jsonSerialize();
 
             if ($this->control instanceof Value && $this->continuation->isEmpty()) {
+                $steps[] = $current;
                 break;
             }
         }
@@ -83,8 +90,11 @@ class CekMachine implements JsonSerializable
     public function nextStep()
     {
         $control = clone $this->control;
+        $action = null;
 
         if ($control instanceof Variable) {
+
+            $action = 'VARIABLE';
 
             $value = $this->environment->lookup($control);
 
@@ -96,6 +106,8 @@ class CekMachine implements JsonSerializable
 
         } else if ($control instanceof Application) {
 
+            $action = 'APPLICATION';
+
             $frame = new Frame(new Pair(null, new Pair(
                 $this->control->getArgument(),
                 clone $this->environment
@@ -106,6 +118,8 @@ class CekMachine implements JsonSerializable
 
         } else if ($control instanceof Func) {
 
+            $action = 'FUNCTION';
+
             $this->control = new Closure($control, clone $this->environment);
 
         } else if ($control instanceof Value) {
@@ -114,11 +128,15 @@ class CekMachine implements JsonSerializable
             $frameContent = clone $frame->getContent();
 
             if ($frameContent->getFst() === null) {
+                $action = 'VALUE_1';
+
                 $this->environment = $frameContent->getSnd()->getSnd();
                 $this->continuation->pop();
                 $this->continuation->push(new Frame(new Pair($control, null)));
                 $this->control = $frameContent->getSnd()->getFst();
             } else if ($frameContent->getFst() instanceof Closure) {
+                $action = 'VALUE_2';
+
                 $function = $frameContent->getFst()->getFunction();
                 $environment = $frameContent->getFst()->getEnvironment();
                 $environment->update($function->getName(), $control);
@@ -131,6 +149,8 @@ class CekMachine implements JsonSerializable
             }
 
         }
+
+        return $action;
     }
 
     public function jsonSerialize()
