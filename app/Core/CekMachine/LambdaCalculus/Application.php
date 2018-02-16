@@ -74,20 +74,22 @@ class Application extends Expression implements JsonSerializable
 
     public function __toString()
     {
-        return '';
-        /*StringBuilder apply = new StringBuilder();
-        if (this.function instanceof Function) {
-            apply.append('(').append(this.function.toString()).append(')');
+        $apply = '';
+        if ($this->function instanceof Func) {
+            $apply .= '(' . strval($this->function) . ')';
         } else {
-            apply.append(this.function.toString());
+            $apply .= strval($this->function);
         }
-        apply.append(' ');
-        if (this.argument instanceof Variable) {
-            apply.append(this.argument);
+
+        $apply .= ' ';
+
+        if ($this->argument instanceof Variable) {
+            $apply .= strval($this->argument);
         } else {
-            apply.append('(').append(this.argument).append(')');
+            $apply .= '(' . strval($this->argument) . ')';
         }
-        return apply.toString();*/
+
+        return $apply;
     }
 
     public function __clone()
