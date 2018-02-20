@@ -132,7 +132,23 @@ function joinPaths()
         if ($arg !== '') { $paths[] = $arg; }
     }
 
-    return preg_replace('#/+#','/',join('/', $paths));
+    return preg_replace('#/+#','/', join('/', $paths));
+}
+
+function joinPackage()
+{
+    $paths = array();
+
+    foreach (func_get_args() as $arg) {
+        if ($arg !== '') { $paths[] = $arg; }
+    }
+
+    return preg_replace('#\.+#', '.', join('.', $paths));
+}
+
+function addPackage($content, $package)
+{
+    return "package $package;\n$content";
 }
 
 function normalizeName($str)

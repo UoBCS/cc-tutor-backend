@@ -22,7 +22,7 @@ class ParseTreeSerializeVisitor implements Visitor
         $transformer = $this->transformNodeValue;
 
         $nodes = [
-            'node'     => $transformer($node->getValue()), //call_user_func([$this, 'transformNodeValue'], $node->getValue()),
+            'node'     => $transformer($node->getValue()),
             'children' => []
         ];
 

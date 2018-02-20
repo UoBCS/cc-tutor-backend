@@ -26,3 +26,7 @@ Route::prefix('syntax-analysis')->group(function () {
         Route::post('/parse', 'LR0Controller@parse');
     });
 });
+
+Route::prefix('semantic-analysis')->group(function () {
+    Route::post('/ast', 'SemanticAnalysisController@ast');
+});

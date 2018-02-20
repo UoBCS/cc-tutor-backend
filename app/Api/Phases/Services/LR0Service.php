@@ -22,6 +22,7 @@ class LR0Service
         $parser->parse();
 
         return [
+            'parse_tree'  => $parser->getJsonParseTree(),
             'tokens'      => $parser->getInput()->getData(),
             'items_dfa'   => $parser->getJsonItemsDfa(),
             'breakpoints' => $this->inspector->getState('breakpoints')

@@ -21,9 +21,9 @@ class FiniteAutomaton implements JsonSerializable
 
     public function __construct(State $initial, Set $alphabet = null)
     {
-        $this->initial = $initial;
+        $this->initial    = $initial;
         $this->errorState = State::error();
-        $this->alphabet = $alphabet === null ? $this->generateAlphabet() : $alphabet;
+        $this->alphabet   = $alphabet === null ? $this->generateAlphabet() : $alphabet;
     }
 
     public static function combine(array $fas)
@@ -110,6 +110,11 @@ class FiniteAutomaton implements JsonSerializable
     public function getInitial()
     {
         return $this->initial;
+    }
+
+    public function setInitial(State $initial)
+    {
+        $this->initial = $initial;
     }
 
     public function generateAlphabet()
@@ -228,7 +233,6 @@ class FiniteAutomaton implements JsonSerializable
     {
         while (true) {
             if (!$this->isDeterministic()) {
-                //var_dump(json_encode($this->jsonSerialize()));
                 throw new AutomatonException('The automaton is not deterministic');
             }
 

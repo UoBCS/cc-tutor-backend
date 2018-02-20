@@ -46,6 +46,26 @@ abstract class DeterministicParser
         $this->inspector->createStore('breakpoints', 'array');
     }
 
+    public static function parseTreeFromJson(array $data) : Node
+    {
+        $root = new Node($data['node']);
+
+        foreach ($data['children'] as $childNodeData) {
+            $root->addChild(self::parseTreeFromJson($childNodeData));
+        }
+
+        return $root;
+    }
+
+    public static function parseTreeToJson(Node $root) : array
+    {
+        $visitor = new ParseTreeSerializeVisitor(function ($node) {
+            return $node->getName();
+        });
+
+        return $root->accept($visitor);
+    }
+
     public function getStack() : Stack
     {
         return $this->stack;
@@ -66,9 +86,9 @@ abstract class DeterministicParser
         return $this->grammar;
     }
 
-    public function getParseTree() : array
+    public function getParseTree($key = null)
     {
-        return $this->parseTree;
+        return $key === null ? $this->parseTree : $this->parseTree[$key];
     }
 
     public function initialize()

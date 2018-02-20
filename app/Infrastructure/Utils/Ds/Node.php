@@ -11,4 +11,9 @@ class Node extends BaseNode implements JsonSerializable
     {
         return $this->getValue();
     }
+
+    public function __toString()
+    {
+        return strval($this->getValue());
+    }
 }

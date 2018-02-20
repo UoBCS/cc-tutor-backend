@@ -10,6 +10,7 @@ use App\Core\Syntax\Grammar\Grammar;
 use App\Core\Syntax\Grammar\GrammarEntity;
 use App\Core\Syntax\Grammar\NonTerminal;
 use App\Core\Syntax\Grammar\Terminal;
+use App\Core\Syntax\Token\Token;
 use App\Core\Syntax\Token\TokenType;
 use App\Infrastructure\Utils\Ds\Node;
 use Ds\Map;
