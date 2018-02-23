@@ -31,8 +31,8 @@ class EmailVerification extends Mailable
      */
     public function build()
     {
-        return $this->view('email.registration_confirmation')->with([
-            'email_token' => $this->user->email_token,
-        ]);
+        return $this->view('email.registration_confirmation')
+                    ->subject('CC Tutor: email verification')
+                    ->with(['email_token' => $this->user->email_token]);
     }
 }

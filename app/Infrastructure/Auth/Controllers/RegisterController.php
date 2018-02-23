@@ -25,7 +25,7 @@ class RegisterController extends Controller
         ];
 
         if ($data['teacher']) {
-            $retData['class_invitation_token'] = 'lol_just_a_test'; // TODO: generate token
+            $retData['class_invitation_token'] = str_random(16);
         }
 
         return User::create($retData);
@@ -37,7 +37,6 @@ class RegisterController extends Controller
         dispatch(new SendVerificationEmail($user));
 
         return response(201);
-        //$this->response(['confirmation_token' => $user->email_token], 201);
     }
 
     public function verify($token)
@@ -46,7 +45,7 @@ class RegisterController extends Controller
         $user->verified = true;
 
         if ($user->save()) {
-            return $this->response($user); // response(200); // $this->response([], 201);
+            return $this->response($user);
         }
 
         throw new SymfonyException\UnprocessableEntityHttpException('Could not verify user.');

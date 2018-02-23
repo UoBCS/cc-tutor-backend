@@ -2,10 +2,11 @@
 
 namespace App\Infrastructure\Auth\Controllers;
 
-use Illuminate\Http\Request;
 use App\Infrastructure\Auth\LoginProxy;
 use App\Infrastructure\Auth\Requests\LoginRequest;
 use App\Infrastructure\Http\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Controller for login routes
@@ -37,10 +38,14 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request)
     {
-        return $this->response($this->loginProxy->attemptLogin(
+        $data = $this->loginProxy->attemptLogin(
             $request->input('email'),
             $request->input('password')
-        ));
+        );
+
+        $data['user_data'] = Auth::user();
+
+        return $this->response($data);
     }
 
     /**

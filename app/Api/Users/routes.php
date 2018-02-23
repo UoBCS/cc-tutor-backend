@@ -1,7 +1,5 @@
 <?php
 
-Route::get('/', 'UserController@getAll');
-Route::post('/', 'UserController@create');
-Route::get('/{id}', 'UserController@getById');
-Route::patch('/{id}', 'UserController@update');
-Route::delete('/{id}', 'UserController@delete');
+Route::get('/students', 'UserController@getStudents');
+Route::get('/students/class-invitation/{token}', 'UserController@submitClassInvitation')->name('users.class_invitation_token');
+Route::get('/teachers', 'UserController@getTeachers');

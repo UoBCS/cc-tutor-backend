@@ -28,7 +28,13 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'created_at', 'updated_at',
+        'id',
+        'email_token',
+        'pivot',
+        'password',
+        'remember_token',
+        'created_at',
+        'updated_at',
     ];
 
     public function courses()
@@ -52,5 +58,24 @@ class User extends Authenticatable
         $newIndex = $currentLesson->index + 1;
 
         return Lesson::where('index', $newIndex)->where('course_id', $cid)->first();
+    }
+
+    public function users()
+    {
+        return $this->teacher
+            ? $this->belongsToMany('App\Api\Users\Models\User', 'user_user', 'teacher_id', 'student_id')
+            : $this->belongsToMany('App\Api\Users\Models\User', 'user_user', 'student_id', 'teacher_id');
+    }
+
+    public function assignments()
+    {
+        return $this->teacher
+            ? $this->hasMany('App\Api\Assignments\Models\Assignment', 'teacher_id')
+            : $this->belongsToMany('Api\App\Assignments\Models\Assignment', 'user_assignment', 'user_id', 'assignment_id');
+    }
+
+    public function scopeTeachers($query)
+    {
+        return $query->where('teacher', 1);
     }
 }

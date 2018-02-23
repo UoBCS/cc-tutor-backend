@@ -2,6 +2,7 @@
 
 namespace App\Api\Users\Repositories;
 
+use App\Api\Users\Exceptions\StudentAlreadyAttendingClass;
 use App\Api\Users\Models\User;
 use App\Infrastructure\Http\Crud\Repository;
 
@@ -23,6 +24,17 @@ class UserRepository extends Repository
         $user->save();
 
         return $user;
+    }
+
+    public function relateStudentAndTeacher($uid)
+    {
+        $teacher = $this->user->users()->where('teacher_id', $uid)->first();
+
+        if ($teacher !== null) {
+            throw new StudentAlreadyAttendingClass();
+        }
+
+        $this->user->users()->attach($uid);
     }
 }
 

@@ -52,16 +52,13 @@ class SemanticAnalysisService
         $parseTreeFilePath = storage_path("app/cctutor/target/classes/com/cctutor/app/$username/ast/parseTree.json");
         $nodeClass = joinPackage($package, 'Node');
         chdir(storage_path('app/cctutor'));
-        exec('mvn compile');
-        chdir(storage_path('app/cctutor/target/classes'));
-        exec("mvn exec:java -Dexec.mainClass=\"com.cctutor.app.ast.AstProgram\" -Dexec.args=\"$parseTreeFilePath $nodeClass\" 2>&1", $output, $exitCode);
+        exec('/opt/maven/bin/mvn -q compile 2>&1', $output, $exitCode);
+        exec("/opt/maven/bin/mvn -q exec:java -Dexec.mainClass=\"com.cctutor.app.ast.AstProgram\" -Dexec.args=\"$parseTreeFilePath $nodeClass\" 2>&1", $output, $exitCode);
         chdir($currentDir);
 
-        var_dump($output);
-        var_dump($exitCode);
-
-        // TODO: return AST
-
-        return ['status' => true];
+        return [
+            'output'    => $output,
+            'exit_code' => $exitCode
+        ];
     }
 }

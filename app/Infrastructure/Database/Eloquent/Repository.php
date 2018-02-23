@@ -5,6 +5,7 @@ namespace App\Infrastructure\Database\Eloquent;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Optimus\Bruno\EloquentBuilderTrait;
 
@@ -23,12 +24,15 @@ abstract class Repository
 
     protected $globalScope;
 
+    protected $user;
+
     abstract protected function getModel();
 
     final public function __construct(DatabaseManager $database)
     {
         $this->database = $database;
         $this->model = $this->getModel();
+        $this->user = Auth::user();
     }
 
     /**

@@ -79,9 +79,9 @@ class AddComponentCommand extends Command
 
         // Make migration
         // -----------------------------------------------------------------------------------------
-        Artisan::call('make:migration', [
+        /*Artisan::call('make:migration', [
             'name' => 'create_' . $templateData['plural'] . '_table'
-        ]);
+        ]);*/
 
         // Create tests
         // -----------------------------------------------------------------------------------------
