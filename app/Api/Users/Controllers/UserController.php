@@ -2,11 +2,12 @@
 
 namespace App\Api\Users\Controllers;
 
-use App\Api\Users\Requests\ClassInvitationRequest;
+use App\Api\Users\Requests\SendClassInvitationEmailRequest;
 use App\Api\Users\Services\UserService;
 use App\Infrastructure\Http\Controller;
 //use App\Infrastructure\Http\Crud\Controller;
 use App\Infrastructure\Http\Validation\SimpleValidationTrait;
+use App\Infrastructure\Jobs\SendClassInvitationEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception as SymfonyException;
 
@@ -60,5 +61,18 @@ class UserController extends Controller
         }
 
         return $user->users()->get();
+    }
+
+    public function sendClassInvitationEmail(SendClassInvitationEmailRequest $request)
+    {
+        $user = $this->user();
+
+        if (!$user->teacher) {
+            throw new SymfonyException\AccessDeniedHttpException();
+        }
+
+        dispatch(new SendClassInvitationEmail($this->user(), $request->input('emails')));
+
+        return response(201);
     }
 }
