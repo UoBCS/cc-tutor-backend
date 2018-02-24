@@ -175,6 +175,7 @@ return [
          * Application Service Providers...
          */
         App\Api\Algorithms\AlgorithmServiceProvider::class,
+        App\Api\Assignments\AssignmentServiceProvider::class,
         App\Api\Users\UserServiceProvider::class,
         App\Api\Phases\PhaseServiceProvider::class,
         App\Core\InspectorServiceProvider::class,
