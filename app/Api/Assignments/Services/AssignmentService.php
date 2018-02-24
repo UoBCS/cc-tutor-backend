@@ -24,4 +24,16 @@ class AssignmentService extends Service
     {
         $this->repository = $repository;
     }
+
+    public function getAllAssignments(User $user, array $options = [])
+    {
+        return $this->repository->query($user->assignments()->getQuery(), $options)->get();
+    }
+
+    public function create($data)
+    {
+        $resource = parent::create($data);
+
+        // Create directories
+    }
 }

@@ -245,7 +245,7 @@ abstract class Repository
             $query = $this->createQueryBuilder();
         }
 
-        return $query->{$scope}(); //->get();
+        return $query->{$scope}();
     }
 
     public function beginTransaction()
@@ -263,14 +263,19 @@ abstract class Repository
         DB::commit();
     }
 
+    public function query($query = null, array $options = [])
+    {
+        return $this->createBaseBuilder($options, $query);
+    }
+
     /**
      * Creates a new query builder with Optimus options set
      * @param  array $options
      * @return Builder
      */
-    protected function createBaseBuilder(array $options = [])
+    protected function createBaseBuilder(array $options = [], $_query = null)
     {
-        $query = $this->createQueryBuilder();
+        $query = $this->createQueryBuilder($_query);
 
         $this->applyResourceOptions($query, $options);
 
@@ -285,10 +290,9 @@ abstract class Repository
      * Creates a new query builder
      * @return Builder
      */
-    protected function createQueryBuilder()
+    protected function createQueryBuilder($_query = null)
     {
-        // Check if callable
-        $query = $this->model->newQuery();
+        $query = $_query === null ? $this->model->newQuery() : $_query;
         return isset($this->globalScope) ? $query->{$this->globalScope}() : $query;
     }
 
