@@ -5,16 +5,16 @@ namespace App\Api\Assignments\Services;
 use App\Api\Assignments\Events;
 use App\Api\Assignments\Exceptions;
 use App\Api\Assignments\Repositories\AssignmentRepository;
-use App\Api\Users\Models\User;
 use App\Infrastructure\Http\Crud\Service;
 use Illuminate\Support\Facades\Auth;
 
 class AssignmentService extends Service
 {
     protected $events = [
-        'resourceWasCreated' => Events\AssignmentWasCreated::class,
-        'resourceWasDeleted' => Events\AssignmentWasDeleted::class,
-        'resourceWasUpdated' => Events\AssignmentWasUpdated::class
+        'resourceWillBeDeleted' => Events\AssignmentWillBeDeleted::class,
+        'resourceWasCreated'    => Events\AssignmentWasCreated::class,
+        'resourceWasDeleted'    => Events\AssignmentWasDeleted::class,
+        'resourceWasUpdated'    => Events\AssignmentWasUpdated::class
     ];
 
     protected $exceptions = [
@@ -45,10 +45,27 @@ class AssignmentService extends Service
 
     public function create($data)
     {
-        $resource = parent::create($data);
+        $dataCopy = $data;
+        unset($dataCopy['extra']);
+        $resource = parent::create($dataCopy);
 
+        // 'impl_general', 'regex_to_nfa', 'nfa_to_dfa', 'll', 'lr', 'll1', 'lr0', 'cek_machine'
         // Create directories
+        $this->repository->createTeacherTestDirectory($data, $this->user);
 
         return $resource;
+    }
+
+    public function attachToStudents($assignment, $data)
+    {
+        $students = $this->user->users()->get();
+
+        $assignment->students()->attach($students->map(function ($student) {
+            return $student->id;
+        }));
+
+        $this->repository->createStudentSolutionsDirectories($data, $students);
+
+        return $assignment;
     }
 }

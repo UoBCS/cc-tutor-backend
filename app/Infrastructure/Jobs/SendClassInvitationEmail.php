@@ -37,6 +37,6 @@ class SendClassInvitationEmail implements ShouldQueue
     public function handle()
     {
         $email = new ClassInvitationEmail($this->user->class_invitation_token);
-        Mail::to($emails)->send($email);
+        Mail::to($this->emails)->send($email);
     }
 }

@@ -148,7 +148,12 @@ function joinPackage()
 
 function addPackage($content, $package)
 {
-    return "package $package;\n$content";
+    return "package $package;\n\n$content";
+}
+
+function getClass($class)
+{
+    return pathinfo($class, PATHINFO_FILENAME);
 }
 
 function normalizeName($str)

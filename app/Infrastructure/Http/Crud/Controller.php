@@ -88,7 +88,7 @@ abstract class Controller extends BaseController
         $data = getOnly($this->getFields($this->createRules), $data[$this->key]);
         $data = $this->processCreateData($data);
 
-        $resultData = $this->processCreationResult($this->service->create($data));
+        $resultData = $this->processCreationResult($this->service->create($data), $data);
 
         return $this->response($resultData, 201);
     }
@@ -123,7 +123,7 @@ abstract class Controller extends BaseController
     public function delete($id)
     {
         $this->service->delete($id);
-        return $this->response('', 204);
+        return $this->response('');
     }
 
     /**
@@ -137,7 +137,7 @@ abstract class Controller extends BaseController
         return $data;
     }
 
-    protected function processCreationResult($data)
+    protected function processCreationResult($data, $inputData)
     {
         return $data;
     }

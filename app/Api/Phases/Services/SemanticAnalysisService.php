@@ -5,7 +5,6 @@ namespace App\Api\Phases\Services;
 use App\Core\Lexer\Lexer;
 use App\Core\Parser\DeterministicParser;
 use App\Core\Parser\LL1;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class SemanticAnalysisService

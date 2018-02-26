@@ -71,11 +71,16 @@ class User extends Authenticatable
     {
         return $this->teacher
             ? $this->hasMany('App\Api\Assignments\Models\Assignment', 'teacher_id')
-            : $this->belongsToMany('Api\App\Assignments\Models\Assignment', 'user_assignment', 'user_id', 'assignment_id');
+            : $this->belongsToMany('App\Api\Assignments\Models\Assignment', 'user_assignment', 'user_id', 'assignment_id');
     }
 
     public function scopeTeachers($query)
     {
         return $query->where('teacher', 1);
+    }
+
+    public function scopeStudents($query)
+    {
+        return $query->where('teacher', 0);
     }
 }

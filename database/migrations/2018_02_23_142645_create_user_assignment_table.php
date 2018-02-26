@@ -17,6 +17,7 @@ class CreateUserAssignmentTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('assignment_id')->unsigned();
+            $table->dateTime('submission_date')->nullable();
 
             $table->foreign('user_id')
                     ->references('id')

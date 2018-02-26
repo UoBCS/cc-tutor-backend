@@ -5,6 +5,7 @@ namespace App\Api\Assignments\Controllers;
 use App\Api\Assignments\Requests\CreateAssignmentRequest;
 use App\Api\Assignments\Services\AssignmentService;
 use App\Infrastructure\Http\Crud\Controller;
+use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception as SymfonyException;
 
 class AssignmentController extends Controller
@@ -15,15 +16,17 @@ class AssignmentController extends Controller
         'assignment'             => 'array|required',
         'assignment.title'       => 'required|string',
         'assignment.type'        => 'required|string',
-        'assignment.description' => 'required|string'
+        'assignment.description' => 'required|string',
+        'assignment.due_date'    => 'required|date',
+        'assignment.extra'       => 'array'
     ];
 
-    protected $updateRules = [
+    /*protected $updateRules = [
         'assignment'             => 'array|required',
         'assignment.title'       => 'string',
         'assignment.type'        => 'string',
         'assignment.description' => 'string'
-    ];
+    ];*/
 
     public function __construct(AssignmentService $service)
     {
@@ -39,6 +42,15 @@ class AssignmentController extends Controller
         }
 
         $data['teacher_id'] = $user->id;
+        $data['start_date'] = Carbon::now();
+
+        return $data;
+    }
+
+    protected function processCreationResult($assignment, $data)
+    {
+        // Attach assignment to students
+        $this->service->attachToStudents($assignment, $data);
 
         return $data;
     }

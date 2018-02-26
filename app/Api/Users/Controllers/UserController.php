@@ -52,8 +52,8 @@ class UserController extends Controller
             throw new SymfonyException\AccessDeniedHttpException();
         }
 
-        dispatch(new SendClassInvitationEmail($this->user(), $request->input('emails')));
+        dispatch(new SendClassInvitationEmail($user, $request->input('emails')));
 
-        return response(201);
+        return response(200);
     }
 }

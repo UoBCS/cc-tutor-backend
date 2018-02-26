@@ -112,7 +112,7 @@ abstract class Service
 
         $this->repository->update($resource, $data);
 
-        event(resolve($this->events['resourceWasUpdated'], ['resource' => $resource, 'data' => $data]));
+        event(app()->makeWith($this->events['resourceWasUpdated'], ['resource' => $resource, 'data' => $data]));
 
         return $resource;
     }
@@ -129,9 +129,13 @@ abstract class Service
 
         $resource = $this->getRequestedResource($id);
 
+        if (isset($this->events['resourceWillBeDeleted'])) {
+            event(app()->makeWith($this->events['resourceWillBeDeleted'], ['resource' => $resource, 'data' => null]));
+        }
+
         $this->repository->delete($id);
 
-        event(resolve($this->events['resourceWasDeleted'], ['resource' => $resource, 'data' => null]));
+        event(app()->makeWith($this->events['resourceWasDeleted'], ['resource' => $resource, 'data' => null]));
     }
 
     /**

@@ -18,6 +18,8 @@ class CreateAssignmentsTable extends Migration
             $table->integer('teacher_id')->unsigned();
             $table->string('title');
             $table->text('description');
+            $table->dateTime('start_date')->useCurrent();
+            $table->dateTime('due_date')->nullable();
             $table->enum('type', ['impl_general', 'regex_to_nfa', 'nfa_to_dfa', 'll', 'lr', 'll1', 'lr0', 'cek_machine']);
 
             $table->foreign('teacher_id')
