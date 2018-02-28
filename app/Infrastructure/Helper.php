@@ -146,10 +146,12 @@ function joinPackage()
     return preg_replace('#\.+#', '.', join('.', $paths));
 }
 
-function addPackage($content, $package)
+function addPackage($content, $package, $replace = false)
 {
-    return startsWith(trim($content), 'package')
-        ? $content
+    $trimmedContent = trim($content);
+
+    return startsWith($trimmedContent, 'package')
+        ? ($replace ? preg_replace("/^package .*;/", "package $package;", $trimmedContent) : $content)
         : "package $package;\n\n$content";
 }
 
@@ -161,4 +163,19 @@ function getClass($class)
 function normalizeName($str)
 {
     return strtolower(str_replace(' ', '', $str));
+}
+
+function mvnCompile($sourcePath)
+{
+    exec('/opt/maven/bin/mvn -q compile 2>&1', $output, $exitCode);
+    //exec("/opt/maven/bin/mvn -q compile -Dproject.build.sourceDirectory=\"$sourcePath\" 2>&1", $output, $exitCode);
+
+    return [$output, $exitCode];
+}
+
+function mvnTest($package)
+{
+    exec("/opt/maven/bin/mvn -Dtest='$package' test 2>&1", $output, $exitCode);
+
+    return [$output, $exitCode];
 }

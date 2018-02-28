@@ -184,6 +184,7 @@ class CompilerConstructionAssistantService
         $currentDir = getcwd();
 
         chdir(storage_path('app/cctutor'));
+        // TODO: compile
         exec("/opt/maven/bin/mvn -Dtest='com.cctutor.app.$username.$courseTitle.$lessonTitle.**' test 2>&1", $output, $exitCode);
         chdir($currentDir);
 

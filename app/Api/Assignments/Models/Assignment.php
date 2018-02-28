@@ -34,6 +34,6 @@ class Assignment extends Model
 
     public function students()
     {
-        return $this->belongsToMany('App\Api\Users\Models\User', 'user_assignment', 'assignment_id', 'user_id');
+        return $this->belongsToMany('App\Api\Users\Models\User', 'user_assignment', 'assignment_id', 'user_id')->withPivot('submission_date');
     }
 }

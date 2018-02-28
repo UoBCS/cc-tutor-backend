@@ -35,6 +35,32 @@ class AssignmentController extends Controller
         $this->service = $service;
     }
 
+    public function getSubmissions($id)
+    {
+        return $this->response(
+            $this->service->getSubmissions($id)
+        );
+    }
+
+    public function submit($id)
+    {
+        $this->service->submit($id);
+        return $this->response('', 204);
+    }
+
+    public function runTests($assignmentId, $studentId)
+    {
+        $user = $this->user();
+
+        if (!$user->teacher) {
+            throw new SymfonyException\AccessDeniedHttpException();
+        }
+
+        return $this->response(
+            $this->service->runTests($assignmentId, $studentId)
+        );
+    }
+
     protected function processCreateData($data)
     {
         $user = $this->user();

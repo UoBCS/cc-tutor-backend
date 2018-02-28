@@ -5,6 +5,7 @@ namespace App\Api\Assignments\Repositories;
 use App\Api\Assignments\Models\Assignment;
 use App\Api\Users\Models\User;
 use App\Infrastructure\Http\Crud\Repository;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class AssignmentRepository extends Repository
@@ -17,6 +18,12 @@ class AssignmentRepository extends Repository
     public function getModel()
     {
         return new Assignment();
+    }
+
+    public function getFullPath(string $username, string $title)
+    {
+        $path = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title);
+        return storage_path("app/$path");
     }
 
     public function getAssignmentContents(User $user, Assignment $assignment)
@@ -182,6 +189,25 @@ class AssignmentRepository extends Repository
         } else {
             $filePath = joinPaths($directory, "$type.json");
             Storage::put($filePath, json_encode($content));
+        }
+    }
+
+    public function copySolutionToTeacher(Assignment $assignment, User $student, User $teacher)
+    {
+        $studentUsername = normalizeName($student->name);
+        $teacherUsername = normalizeName($teacher->name);
+        $title           = normalizeName($assignment->title);
+        $teacherPackage  = joinPackage($this->rootPackage, $teacherUsername, $this->assignmentsPath, $title);
+
+        $srcPath = joinPaths($this->mainFilesPath, $studentUsername, $this->assignmentsPath, $title);
+        $destPath = joinPaths($this->mainFilesPath, $teacherUsername, $this->assignmentsPath, $title);
+
+        File::copyDirectory(storage_path("app/$srcPath"), storage_path("app/$destPath"));
+
+        $files = Storage::allFiles($destPath);
+
+        foreach ($files as $file) {
+            Storage::put($file, addPackage(Storage::get($file), $teacherPackage, true));
         }
     }
 
