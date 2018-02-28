@@ -9,14 +9,41 @@ use Illuminate\Support\Facades\Storage;
 
 class AssignmentRepository extends Repository
 {
-    private $mainFilesPath = 'cctutor/src/main/java/com/cctutor/app';
-    private $testFilesPath = 'cctutor/src/test/java/com/cctutor/app';
-    private $rootPackage = 'com.cctutor.app';
+    private $mainFilesPath   = 'cctutor/src/main/java/com/cctutor/app';
+    private $testFilesPath   = 'cctutor/src/test/java/com/cctutor/app';
+    private $rootPackage     = 'com.cctutor.app';
     private $assignmentsPath = 'assignments';
 
     public function getModel()
     {
         return new Assignment();
+    }
+
+    public function getAssignmentContents(User $user, Assignment $assignment)
+    {
+        $title     = normalizeName($assignment->title);
+        $username  = normalizeName($user->name);
+        $type      = $assignment->type;
+
+        if ($type === 'impl_general') {
+            // If teacher return test directory
+            $directory = joinPaths($user->teacher ? $this->testFilesPath : $this->mainFilesPath, $username, $this->assignmentsPath, $title);
+
+            $files = Storage::allFiles($directory);
+            $contents = [];
+
+            foreach ($files as $file) {
+                $contents[] = [
+                    'name'    => basename($file),
+                    'content' => Storage::get($file)
+                ];
+            }
+
+            return $contents;
+        } else {
+            $filePath = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title, "$type.json");
+            return Storage::get($filePath);
+        }
     }
 
     public function createTeacherTestDirectory(array $data, User $user)
@@ -26,8 +53,12 @@ class AssignmentRepository extends Repository
         $extra = $data['extra'];
 
         $username  = normalizeName($user->name);
-        $directory = joinPaths($this->testFilesPath, $username, $this->assignmentsPath, $title);
-        $package   = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
+        $directory = joinPaths(
+            $type === 'impl_general' ? $this->testFilesPath : $this->mainFilesPath,
+            $username,
+            $this->assignmentsPath,
+            $title
+        );
 
         if (Storage::exists($directory)) {
             Storage::deleteDirectory($directory);
@@ -36,12 +67,17 @@ class AssignmentRepository extends Repository
         Storage::makeDirectory($directory);
 
         if ($type === 'impl_general') {
+            $package = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
+
             foreach ($extra['files'] as $fileData) {
                 $content = addPackage($fileData['content'], $package);
                 $filePath = joinPaths($directory, $fileData['name']);
 
                 Storage::put($filePath, $content);
             }
+        } else {
+            $filePath = joinPaths($directory, "$type.json");
+            Storage::put($filePath, $extra['solution']);
         }
     }
 
@@ -54,7 +90,6 @@ class AssignmentRepository extends Repository
         foreach ($students as $student) {
             $username  = normalizeName($student->name);
             $directory = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title);
-            $package   = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
 
             if (Storage::exists($directory)) {
                 Storage::deleteDirectory($directory);
@@ -64,15 +99,15 @@ class AssignmentRepository extends Repository
 
             if ($type === 'impl_general') {
                 foreach ($extra['files'] as $fileData) {
-                    $filename = preg_replace("/Test.java$/", '.java', $fileData['name']);
+                    [$filename, $content] = $this->getImplementationFromTest($fileData['name'], $username, $title);
 
-                    $class = getClass($filename);
-                    $content = "public class $class {\n\n}";
-                    $content = addPackage($content, $package);
                     $filePath = joinPaths($directory, $filename);
 
                     Storage::put($filePath, $content);
                 }
+            } else {
+                $filePath = joinPaths($directory, "$type.json");
+                Storage::put($filePath, '{"breakpoints":[]}');
             }
         }
     }
@@ -97,16 +132,67 @@ class AssignmentRepository extends Repository
     {
         $title = normalizeName($assignment->title);
 
-        var_dump($assignment->students);
         foreach ($assignment->students as $student) {
             $username = normalizeName($student->name);
-
             $mainDirectory = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title);
-            var_dump($mainDirectory);
+
             if (Storage::exists($mainDirectory)) {
-                var_dump('asdaisod');
                 Storage::deleteDirectory($mainDirectory);
             }
         }
+    }
+
+    public function updateContents(User $user, Assignment $assignment, array $content)
+    {
+        $title = normalizeName($assignment->title);
+        $username  = normalizeName($user->name);
+        $type      = $assignment->type;
+        $directory = joinPaths(
+            $user->teacher && $assignment->type === 'impl_general'
+                ? $this->testFilesPath
+                : $this->mainFilesPath
+            , $username
+            , $this->assignmentsPath
+            , $title
+        );
+
+        if ($type === 'impl_general') {
+            $package  = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
+
+            foreach ($content as $file) {
+                $filePath = joinPaths($directory, $file['name']);
+
+                Storage::put($filePath, addPackage($file['content'], $package));
+
+                // Update students directories
+                if ($user->teacher) {
+                    foreach ($assignment->students as $student) {
+                        $username = normalizeName($student->name);
+
+                        [$filename, $fileContent] = $this->getImplementationFromTest($file['name'], $username, $title);
+
+                        $filePath = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title, $filename);
+
+                        if (!Storage::exists($filePath)) {
+                            Storage::put($filePath, $fileContent);
+                        }
+                    }
+                }
+            }
+        } else {
+            $filePath = joinPaths($directory, "$type.json");
+            Storage::put($filePath, json_encode($content));
+        }
+    }
+
+    private function getImplementationFromTest($testFilename, $username, $title)
+    {
+        $package  = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
+        $filename = preg_replace("/Test.java$/", '.java', $testFilename);
+        $class    = getClass($filename);
+        $content  = "public class $class {\n\n}";
+        $content  = addPackage($content, $package);
+
+        return [$filename, $content];
     }
 }

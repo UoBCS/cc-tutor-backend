@@ -36,11 +36,12 @@ class AssignmentService extends Service
 
     public function getById($id, $options = [])
     {
-        $resource = parent::getById($id, $options);
+        $data = [];
 
-        // Get directory contents
+        $data['assignment'] = parent::getById($id, $options);
+        $data['contents']   = $this->repository->getAssignmentContents($this->user, $data['assignment']);
 
-        return $resource;
+        return $data;
     }
 
     public function create($data)

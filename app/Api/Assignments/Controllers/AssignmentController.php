@@ -21,12 +21,14 @@ class AssignmentController extends Controller
         'assignment.extra'       => 'array'
     ];
 
-    /*protected $updateRules = [
+    protected $updateRules = [
         'assignment'             => 'array|required',
         'assignment.title'       => 'string',
         'assignment.type'        => 'string',
-        'assignment.description' => 'string'
-    ];*/
+        'assignment.description' => 'string',
+        'assignment.due_date'    => 'date',
+        'assignment.extra'       => 'array'
+    ];
 
     public function __construct(AssignmentService $service)
     {
@@ -43,6 +45,17 @@ class AssignmentController extends Controller
 
         $data['teacher_id'] = $user->id;
         $data['start_date'] = Carbon::now();
+
+        return $data;
+    }
+
+    protected function processUpdateData($data)
+    {
+        $user = $this->user();
+
+        if (!$user->teacher) {
+            return getOnly(['extra'], $data);
+        }
 
         return $data;
     }

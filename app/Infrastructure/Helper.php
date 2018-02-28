@@ -148,7 +148,9 @@ function joinPackage()
 
 function addPackage($content, $package)
 {
-    return "package $package;\n\n$content";
+    return startsWith(trim($content), 'package')
+        ? $content
+        : "package $package;\n\n$content";
 }
 
 function getClass($class)

@@ -25,6 +25,7 @@ class AssignmentServiceProvider extends EventServiceProvider
         ],
         AssignmentWasUpdated::class => [
             // listeners for when an assignment is updated
+            Listeners\UpdateAssignmentContents::class,
             Listeners\CommitTransaction::class,
         ]
     ];
