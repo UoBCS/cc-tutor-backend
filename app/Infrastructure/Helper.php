@@ -40,6 +40,18 @@ function getOnly($keys, $data)
     return $newData;
 }
 
+function hasStringKeys(array $array) : bool
+{
+    return count(array_filter(array_keys($array), 'is_string')) > 0;
+}
+
+function flatten(array $array) : array
+{
+    $return = [];
+    array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
+    return $return;
+}
+
 function startsWith($haystack, $needle)
 {
     return strncmp($haystack, $needle, strlen($needle)) === 0;

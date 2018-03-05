@@ -71,7 +71,6 @@ class DfaConverter
         }
 
         $fa = new FiniteAutomaton($initialDfaState);
-        //fa.optimise();
         $fa->setIds();
         self::setFinalStates($fa);
 
@@ -154,7 +153,7 @@ class DfaConverter
             }
         }
 
-        return NULL;
+        return null;
     }
 
     private static function epsilonClosure(Set $result, State $state)

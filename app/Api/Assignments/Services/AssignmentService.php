@@ -7,6 +7,7 @@ use App\Api\Assignments\Exceptions;
 use App\Api\Assignments\Repositories\AssignmentRepository;
 use App\Api\Users\Exceptions\UserNotFoundException;
 use App\Api\Users\Repositories\UserRepository;
+use App\Core\Breakpoint;
 use App\Infrastructure\Http\Crud\Service;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +60,6 @@ class AssignmentService extends Service
         unset($dataCopy['extra']);
         $resource = parent::create($dataCopy);
 
-        // 'impl_general', 'regex_to_nfa', 'nfa_to_dfa', 'll', 'lr', 'll1', 'lr0', 'cek_machine'
         // Create directories
         $this->repository->createTeacherTestDirectory($data, $this->user);
 
@@ -134,6 +134,8 @@ class AssignmentService extends Service
     {
         $assignment = $this->getById($assignmentId)['assignment'];
         $student    = $this->userRepository->getById($studentId);
+        $output     = [];
+        $exitCode   = 0;
 
         if ($student === null) {
             throw new UserNotFoundException();
@@ -143,16 +145,24 @@ class AssignmentService extends Service
             throw new SymfonyException\AccessDeniedHttpException();
         }
 
-        $this->repository->copySolutionToTeacher($assignment, $student, $this->user);
+        if ($assignment->type === 'impl_general') {
+            $this->repository->copySolutionToTeacher($assignment, $student, $this->user);
 
-        $username = normalizeName($this->user->name);
-        $title    = normalizeName($assignment->title);
+            $username = normalizeName($this->user->name);
+            $title    = normalizeName($assignment->title);
 
-        $currentDir = getcwd();
-        chdir(storage_path('app/cctutor'));
-        [$output, $exitCode] = mvnCompile($this->repository->getFullPath($username, $title));
-        [$output, $exitCode] = mvnTest("com.cctutor.app.$username.assignments.$title.**");
-        chdir($currentDir);
+            $currentDir = getcwd();
+            chdir(storage_path('app/cctutor'));
+            [$output, $exitCode] = mvnCompile($this->repository->getFullPath($username, $title));
+            [$output, $exitCode] = mvnTest("com.cctutor.app.$username.assignments.$title.**");
+            chdir($currentDir);
+        } else {
+            $studentSolution = $this->repository->getAssignmentContents($student, $assignment);
+            $teacherSolution = $this->repository->getAssignmentContents($this->user, $assignment);
+
+            $exitCode = json_encode($teacherSolution['breakpoints']) === json_encode($studentSolution['breakpoints'])
+                ? 0 : 1;
+        }
 
         return [
             'output'    => $output,

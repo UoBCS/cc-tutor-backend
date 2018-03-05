@@ -4,6 +4,7 @@ namespace App\Api\Assignments\Repositories;
 
 use App\Api\Assignments\Models\Assignment;
 use App\Api\Users\Models\User;
+use App\Core\Automata\FiniteAutomaton;
 use App\Infrastructure\Http\Crud\Repository;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -48,8 +49,13 @@ class AssignmentRepository extends Repository
 
             return $contents;
         } else {
-            $filePath = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title, "$type.json");
-            return Storage::get($filePath);
+            $inputFilePath = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title, "input_$type.json");
+            $breakpointsFilePath = joinPaths($this->mainFilesPath, $username, $this->assignmentsPath, $title, "breakpoints_$type.json");
+
+            return [
+                'input'       => json_decode(Storage::get($inputFilePath), true),
+                'breakpoints' => json_decode(Storage::get($breakpointsFilePath), true)
+            ];
         }
     }
 
@@ -73,18 +79,28 @@ class AssignmentRepository extends Repository
 
         Storage::makeDirectory($directory);
 
-        if ($type === 'impl_general') {
-            $package = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
+        switch ($type) {
+            case 'impl_general':
+                $package = joinPackage($this->rootPackage, $username, $this->assignmentsPath, $title);
 
-            foreach ($extra['files'] as $fileData) {
-                $content = addPackage($fileData['content'], $package);
-                $filePath = joinPaths($directory, $fileData['name']);
+                foreach ($extra['files'] as $fileData) {
+                    $content = addPackage($fileData['content'], $package);
+                    $filePath = joinPaths($directory, $fileData['name']);
 
-                Storage::put($filePath, $content);
-            }
-        } else {
-            $filePath = joinPaths($directory, "$type.json");
-            Storage::put($filePath, $extra['solution']);
+                    Storage::put($filePath, $content);
+                }
+                break;
+
+            case 'nfa_to_dfa':
+                $inputFilePath = joinPaths($directory, "input_$type.json");
+                Storage::put($inputFilePath, json_encode($extra['content']));
+
+                $breakpointsFilePath = joinPaths($directory, "breakpoints_$type.json");
+                $nfa = FiniteAutomaton::fromArray($extra['content']);
+                $nfa->toDfa();
+                $inspector = inspector();
+                Storage::put($breakpointsFilePath, json_encode($inspector->getState('breakpoints')));
+                break;
         }
     }
 
@@ -113,8 +129,11 @@ class AssignmentRepository extends Repository
                     Storage::put($filePath, $content);
                 }
             } else {
-                $filePath = joinPaths($directory, "$type.json");
-                Storage::put($filePath, '{"breakpoints":[]}');
+                $inputFilePath = joinPaths($directory, "input_$type.json");
+                Storage::put($inputFilePath, json_encode($extra['content']));
+
+                $breakpointsFilePath = joinPaths($directory, "breakpoints_$type.json");
+                Storage::put($breakpointsFilePath, '[]');
             }
         }
     }
@@ -187,7 +206,7 @@ class AssignmentRepository extends Repository
                 }
             }
         } else {
-            $filePath = joinPaths($directory, "$type.json");
+            $filePath = joinPaths($directory, "breakpoints_$type.json");
             Storage::put($filePath, json_encode($content));
         }
     }

@@ -66,43 +66,46 @@ class FiniteAutomaton implements JsonSerializable
     public static function fromArray($arr)
     {
         $states = [];
+        $notFlat = isset($arr['states']) && isset($arr['transitions']);
 
-        // Add states
-        foreach ($arr['states'] as $state) {
-            if (!isset($states[$state['id']])) {
-                $states[$state['id']] = new State($state['id']);
+        if ($notFlat) {
+            // Add states
+            foreach ($arr['states'] as $state) {
+                if (!isset($states[$state['id']])) {
+                    $states[$state['id']] = new State($state['id']);
 
-                if (isset($state['final'])) {
-                    $states[$state['id']]->setFinal($state['final']);
+                    if (isset($state['final'])) {
+                        $states[$state['id']]->setFinal($state['final']);
+                    }
+
+                    if (isset($state['data'])) {
+                        $states[$state['id']]->setData($state['data']);
+                    }
+                }
+            }
+
+            // Add transitions
+            foreach ($arr['transitions'] as $transition) {
+                if (isset($states[$transition['src']])
+                && isset($states[$transition['dest']])) {
+                    $states[$transition['src']]->addTransition($states[$transition['dest']], $transition['char']);
+                }
+            }
+        } else {
+            foreach ($arr as $entry) {
+                if (!isset($states[$entry['src']['id']])) {
+                    $states[$entry['src']['id']] = new State($entry['src']['id']);
+                    $states[$entry['src']['id']]->setFinal($entry['src']['final']);
                 }
 
-                if (isset($state['data'])) {
-                    $states[$state['id']]->setData($state['data']);
+                if (!isset($states[$entry['dest']['id']])) {
+                    $states[$entry['dest']['id']] = new State($entry['dest']['id']);
+                    $states[$entry['dest']['id']]->setFinal($entry['dest']['final']);
                 }
+
+                $states[$entry['src']['id']]->addTransition($states[$entry['dest']['id']], [$entry['char']]);
             }
         }
-
-        // Add transitions
-        foreach ($arr['transitions'] as $transition) {
-            if (isset($states[$transition['src']])
-            && isset($states[$transition['dest']])) {
-                $states[$transition['src']]->addTransition($states[$transition['dest']], $transition['char']);
-            }
-        }
-
-        /*foreach ($arr as $entry) {
-            if (!isset($states[$entry['src']['id']])) {
-                $states[$entry['src']['id']] = new State($entry['src']['id']);
-                $states[$entry['src']['id']]->setFinal($entry['src']['final']);
-            }
-
-            if (!isset($states[$entry['dest']['id']])) {
-                $states[$entry['dest']['id']] = new State($entry['dest']['id']);
-                $states[$entry['dest']['id']]->setFinal($entry['dest']['final']);
-            }
-
-            $states[$entry['src']['id']]->addTransition($states[$entry['dest']['id']], [$entry['char']]);
-        }*/
 
         return new FiniteAutomaton($states[0]);
     }
