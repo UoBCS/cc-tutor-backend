@@ -177,7 +177,7 @@ function normalizeName($str)
     return strtolower(str_replace(' ', '', $str));
 }
 
-function mvnCompile($sourcePath)
+function mvnCompile($sourcePath = null)
 {
     exec('/opt/maven/bin/mvn -q compile 2>&1', $output, $exitCode);
     //exec("/opt/maven/bin/mvn -q compile -Dproject.build.sourceDirectory=\"$sourcePath\" 2>&1", $output, $exitCode);
@@ -188,6 +188,14 @@ function mvnCompile($sourcePath)
 function mvnTest($package)
 {
     exec("/opt/maven/bin/mvn -Dtest='$package' test 2>&1", $output, $exitCode);
+
+    return [$output, $exitCode];
+}
+
+function mvnExecJava($mainClass, $args)
+{
+    $args = implode(' ', $args);
+    exec("/opt/maven/bin/mvn -q exec:java -Dexec.mainClass=\"$mainClass\" -Dexec.args=\"$args\" 2>&1", $output, $exitCode);
 
     return [$output, $exitCode];
 }

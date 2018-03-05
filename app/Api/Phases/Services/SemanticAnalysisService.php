@@ -48,11 +48,11 @@ class SemanticAnalysisService
         Storage::put(joinPaths($directory, 'parseTree.json'), $parseTreeStr);
 
         $currentDir = getcwd();
-        $parseTreeFilePath = storage_path("app/cctutor/target/classes/com/cctutor/app/$username/ast/parseTree.json");
+        $parseTreeFilePath = storage_path(joinPaths('app', $this->filesPath, "$username/ast/parseTree.json"));
         $nodeClass = joinPackage($package, 'Node');
         chdir(storage_path('app/cctutor'));
-        exec('/opt/maven/bin/mvn -q compile 2>&1', $output, $exitCode);
-        exec("/opt/maven/bin/mvn -q exec:java -Dexec.mainClass=\"com.cctutor.app.ast.AstProgram\" -Dexec.args=\"$parseTreeFilePath $nodeClass\" 2>&1", $output, $exitCode);
+        [$output, $exitCode] = mvnCompile();
+        [$output, $exitCode] = mvnExecJava('com.cctutor.app.ast.AstProgram', [$parseTreeFilePath, $nodeClass]);
         chdir($currentDir);
 
         return [
