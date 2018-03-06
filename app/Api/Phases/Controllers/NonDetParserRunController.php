@@ -66,7 +66,7 @@ class NonDetParserRunController extends Controller
         return $this->service->initialize($data);
     }
 
-    protected function processCreationResult($data)
+    protected function processCreationResult($data, $inputData)
     {
         $type = request()->route()->named('ll_parsing') ? 'll' : 'lr';
         $newData = (array) $data;
