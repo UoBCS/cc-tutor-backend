@@ -14,9 +14,9 @@ class LexicalAnalysisService
         $this->inspector = inspector();
     }
 
-    public function run(string $content, array $tokenTypes)
+    public function run(string $content, array $tokenTypes, bool $dfaMinimized)
     {
-        $lexer = new Lexer($content, $tokenTypes);
+        $lexer = new Lexer($content, $tokenTypes, $dfaMinimized);
         $lexer->getTokens();
 
         return [

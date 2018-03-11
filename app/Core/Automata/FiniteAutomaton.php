@@ -308,7 +308,9 @@ class FiniteAutomaton implements JsonSerializable
                 foreach ($dfa as $transition) {
                     if ($transition['dest'] === $q1) {
                         $transition['src']->addTransition($q0, $transition['char']);
-                        $q0->setData(array_merge($q0->getData(), $q1->getData()));
+                        if (is_array($q0->getData()) && is_array($q1->getData())) {
+                            $q0->setData(array_merge($q0->getData(), $q1->getData()));
+                        }
                         $transition['src']->removeTransition($q1, $transition['char']);
                     }
                 }

@@ -20,7 +20,8 @@ class LexicalAnalysisController extends Controller
         return $this->response(
             $this->service->run(
                 $request->input('content'),
-                $request->input('token_types')
+                $request->input('token_types'),
+                $request->input('dfa_minimized')
             )
         );
     }

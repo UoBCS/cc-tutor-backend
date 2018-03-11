@@ -14,8 +14,9 @@ class LexicalAnalysisRequest extends ApiRequest
     public function rules()
     {
         return [
-            'content'     => 'required|string',
-            'token_types' => 'required|array'
+            'content'       => 'required|string',
+            'token_types'   => 'required|array',
+            'dfa_minimized' => 'required|boolean'
         ];
     }
 }

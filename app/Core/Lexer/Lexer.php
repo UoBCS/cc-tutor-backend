@@ -24,11 +24,11 @@ class Lexer
 
     private $inspector;
 
-    public function __construct($input, $tokenTypes)
+    public function __construct($input, $tokenTypes, $dfaMinimized = false)
     {
         $this->input      = $input instanceof InputStream ? $input : new InputStream($input);
         $this->tokenTypes = $tokenTypes instanceof Set ? $tokenTypes : TokenType::fromDataArray($tokenTypes);
-        $this->buildDfa();
+        $this->buildDfa($dfaMinimized);
 
         $this->inspector = inspector();
         $this->inspector->createStore('breakpoints', 'array');
@@ -189,7 +189,7 @@ class Lexer
         return $this->input;
     }
 
-    public function buildDfa()
+    public function buildDfa($dfaMinimized)
     {
         // Construct NFAs for regexps
         $nfas = [];
@@ -204,7 +204,9 @@ class Lexer
         // NFA to DFA
         $this->dfa = $nfa->toDfa();
 
-        $this->dfa->minimizeDfa();
+        if ($dfaMinimized) {
+            $this->dfa->minimizeDfa();
+        }
 
         $this->dfa->traverse(function ($s) {
             $s->serialization['showStates'] = false;

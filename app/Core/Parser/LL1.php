@@ -285,7 +285,7 @@ class LL1 extends DeterministicParser
 
             if ($firstAlpha->contains($firstInputTerminal)) {
                 /* > */ $this->inspector->breakpoint('first', [
-                /* > */     'alpha'          => array_map('getGrammarEntityName', $alpha), // TODO: transform to epsilon
+                /* > */     'alpha'          => array_map('getGrammarEntityName', $alpha),
                 /* > */     'first_set'      => array_map('getGrammarEntityName', $firstAlpha->toArray()),
                 /* > */     'input_terminal' => $firstInputTerminal->getName()
                 /* > */ ]);
@@ -309,7 +309,6 @@ class LL1 extends DeterministicParser
             }
         }
 
-        // TODO: stringify matches when conflict happens
         // Check FIRST-FIRST conflicts
         if (count($firstMatches) > 1) {
             return [
