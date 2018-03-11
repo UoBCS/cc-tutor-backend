@@ -191,8 +191,6 @@ class Lexer
 
     public function buildDfa()
     {
-        //JavaTokenType[] tokens = JavaTokenType.values();
-
         // Construct NFAs for regexps
         $nfas = [];
 
@@ -205,6 +203,8 @@ class Lexer
 
         // NFA to DFA
         $this->dfa = $nfa->toDfa();
+
+        $this->dfa->minimizeDfa();
 
         $this->dfa->traverse(function ($s) {
             $s->serialization['showStates'] = false;

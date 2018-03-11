@@ -22,8 +22,9 @@ class FiniteAutomaton implements JsonSerializable
     public function __construct(State $initial, Set $alphabet = null)
     {
         $this->initial    = $initial;
-        $this->errorState = State::error();
         $this->alphabet   = $alphabet === null ? $this->generateAlphabet() : $alphabet;
+        $this->errorState = State::error();
+
     }
 
     public static function combine(array $fas)
@@ -262,19 +263,18 @@ class FiniteAutomaton implements JsonSerializable
             });
 
             do {
-                $visited = new Set();
                 $finish = true;
 
-                $table->findAndUpdate(function ($s1, $s2, $value) use ($visited, &$finish, $table) {
+                $table->findAndUpdate(function ($s1, $s2, $value) use (&$finish, $table) {
                     if ($value) {
                         return false;
                     }
 
-                    $chars1 = new Set($s1->getChars());
+                    /*$chars1 = new Set($s1->getChars());
                     $chars2 = new Set($s2->getChars());
-                    $chars = $chars1->union($chars2);
+                    $chars = $chars1->union($chars2);*/
 
-                    foreach ($chars as $char) {
+                    foreach ($this->alphabet as $char) {
                         $connectedStates1 = $s1->getState($char);
                         $connectedStates2 = $s2->getState($char);
 
@@ -308,6 +308,7 @@ class FiniteAutomaton implements JsonSerializable
                 foreach ($dfa as $transition) {
                     if ($transition['dest'] === $q1) {
                         $transition['src']->addTransition($q0, $transition['char']);
+                        $q0->setData(array_merge($q0->getData(), $q1->getData()));
                         $transition['src']->removeTransition($q1, $transition['char']);
                     }
                 }

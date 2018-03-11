@@ -26,6 +26,7 @@ class State implements JsonSerializable
     public static function error() : self
     {
         $state = new State();
+        $state->id      = -1;
         $state->isError = true;
         return $state;
     }
