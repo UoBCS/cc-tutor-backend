@@ -3,8 +3,9 @@
 namespace App\Infrastructure\Utils\Ds;
 
 use Ds\Map;
+use JsonSerializable;
 
-class DiagTable
+class DiagTable implements JsonSerializable
 {
     private $rowsHeader;
     private $colsHeader;
@@ -95,5 +96,14 @@ class DiagTable
         }
 
         return $contents;
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'rows'     => $this->rowsHeader,
+            'cols'     => $this->colsHeader,
+            'contents' => $this->getContents()
+        ];
     }
 }

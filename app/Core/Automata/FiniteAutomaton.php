@@ -24,7 +24,6 @@ class FiniteAutomaton implements JsonSerializable
         $this->initial    = $initial;
         $this->alphabet   = $alphabet === null ? $this->generateAlphabet() : $alphabet;
         $this->errorState = State::error();
-
     }
 
     public static function combine(array $fas)
@@ -235,6 +234,9 @@ class FiniteAutomaton implements JsonSerializable
 
     public function minimizeDfa()
     {
+        $inspector = inspector();
+        $inspector->createStore('breakpoints', 'array');
+
         while (true) {
             if (!$this->isDeterministic()) {
                 throw new AutomatonException('The automaton is not deterministic');
@@ -257,10 +259,18 @@ class FiniteAutomaton implements JsonSerializable
                 return $s1->getId() - $s2->getId();
             });
 
+            /* > */ $inspector->breakpoint('reachable_states', [
+            /* > */    'states' => $states
+            /* > */ ]);
+
             // 2. Construct table
             $table = DiagTable::fromArray($states, $states, function ($s1, $s2) {
                 return $s1->isFinal() !== $s2->isFinal();
             });
+
+            /* > */ $inspector->breakpoint('initial_table', [
+            /* > */    'table' => $table
+            /* > */ ]);
 
             do {
                 $finish = true;
@@ -289,6 +299,10 @@ class FiniteAutomaton implements JsonSerializable
 
                     return false;
                 }, true);
+
+                /* > */ $inspector->breakpoint('updated_table', [
+                /* > */    'table' => $table
+                /* > */ ]);
             } while (!$finish);
 
             // Modify DFA
@@ -298,6 +312,10 @@ class FiniteAutomaton implements JsonSerializable
             if (count($unmarkedStates) === 0) {
                 break;
             }
+
+            /* > */ $inspector->breakpoint('unmarked_states', [
+            /* > */    'unmarked_states' => $unmarkedStates
+            /* > */ ]);
 
             foreach ($unmarkedStates as $statesPair) {
                 $q0 = $statesPair[0];
@@ -316,6 +334,8 @@ class FiniteAutomaton implements JsonSerializable
                 }
             }
         }
+
+        /* > */ $inspector->breakpoint('finish', null);
 
         return $this->jsonSerialize();
     }

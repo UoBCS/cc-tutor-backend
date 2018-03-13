@@ -14,9 +14,7 @@ class MinimizeDfaRequest extends ApiRequest
     public function rules()
     {
         return [
-            'dfa'             => 'required|array',
-            'dfa.states'      => 'required|array',
-            'dfa.transitions' => 'required|array'
+            'dfa' => 'required|array',
         ];
     }
 }

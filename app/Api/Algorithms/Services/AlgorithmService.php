@@ -39,7 +39,8 @@ class AlgorithmService
     {
         $result = FiniteAutomaton::fromArray($dfa)->minimizeDfa();
         return [
-            'dfa' => $result
+            'breakpoints' => $this->inspector->getState('breakpoints'),
+            'dfa'         => $result
         ];
     }
 

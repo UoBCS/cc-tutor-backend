@@ -8,7 +8,7 @@ use JsonSerializable;
 class DfaState extends State implements JsonSerializable
 {
     public $serialization = [
-        'showStates' => false
+        'showStates' => true
     ];
     private $states;
 
