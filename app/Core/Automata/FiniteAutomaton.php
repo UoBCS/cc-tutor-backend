@@ -242,6 +242,10 @@ class FiniteAutomaton implements JsonSerializable
                 throw new AutomatonException('The automaton is not deterministic');
             }
 
+            /* > */ $inspector->breakpoint('input_dfa', [
+            /* > */    'dfa' => $this->jsonSerialize()
+            /* > */ ]);
+
             // 1. Get all reachable states
             $states = [];
 
@@ -280,10 +284,6 @@ class FiniteAutomaton implements JsonSerializable
                         return false;
                     }
 
-                    /*$chars1 = new Set($s1->getChars());
-                    $chars2 = new Set($s2->getChars());
-                    $chars = $chars1->union($chars2);*/
-
                     foreach ($this->alphabet as $char) {
                         $connectedStates1 = $s1->getState($char);
                         $connectedStates2 = $s2->getState($char);
@@ -314,7 +314,7 @@ class FiniteAutomaton implements JsonSerializable
             }
 
             /* > */ $inspector->breakpoint('unmarked_states', [
-            /* > */    'unmarked_states' => $unmarkedStates
+            /* > */    'states' => $unmarkedStates
             /* > */ ]);
 
             foreach ($unmarkedStates as $statesPair) {
@@ -333,6 +333,10 @@ class FiniteAutomaton implements JsonSerializable
                     }
                 }
             }
+
+            /* > */ $inspector->breakpoint('updated_dfa', [
+            /* > */    'dfa' => $this->jsonSerialize()
+            /* > */ ]);
         }
 
         /* > */ $inspector->breakpoint('finish', null);
