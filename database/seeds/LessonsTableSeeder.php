@@ -12,25 +12,34 @@ class LessonsTableSeeder extends Seeder
      */
     public function run()
     {
-        $courseId = DB::table('courses')->where('title', 'Automata')->first()->id;
+        $automataCourseId = DB::table('courses')->where('title', 'Automata')->first()->id;
+        $regexInstructions = [];
         $stateInstructions = [];
         $finiteAutomatonInstructions = [];
 
         DB::table('lessons')->insert([
             [
                 'index'        => 0,
-                'title'        => 'State',
-                'description'  => 'Implement the state class',
-                'instructions' => json_encode($stateInstructions),
-                'course_id'    => $courseId
+                'title'        => 'Regex',
+                'description'  => 'Implement the regex classes',
+                'instructions' => json_encode($regexInstructions),
+                'course_id'    => $automataCourseId
             ],
 
             [
                 'index'        => 1,
+                'title'        => 'State',
+                'description'  => 'Implement the state class',
+                'instructions' => json_encode($stateInstructions),
+                'course_id'    => $automataCourseId
+            ],
+
+            [
+                'index'        => 2,
                 'title'        => 'Finite Automaton',
                 'description'  => 'Implement the finite automaton class',
                 'instructions' => json_encode($finiteAutomatonInstructions),
-                'course_id'    => $courseId
+                'course_id'    => $automataCourseId
             ]
         ]);
     }

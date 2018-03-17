@@ -47,13 +47,13 @@ class CompilerConstructionAssistantService
         // Copy main package
         $coursePath = $this->repository->getCoursePath($course);
         if (File::copyDirectory($this->repository->getBaseCoursePath($course), $coursePath)) {
-            $this->changeFilesPackage($coursePath, 'courses', $username);
+            $this->changeFilesPackageAndImports($coursePath, 'courses', $username);
         }
 
         // Copy test package
         $courseTestsPath = $this->repository->getCourseTestsPath($course);
         if (File::copyDirectory($this->repository->getBaseCourseTestsPath($course), $courseTestsPath)) {
-            $this->changeFilesPackage($courseTestsPath, 'courses', $username);
+            $this->changeFilesPackageAndImports($courseTestsPath, 'courses', $username);
         }
 
         return $this->repository->getLessonData($course, $lesson);
@@ -164,12 +164,15 @@ class CompilerConstructionAssistantService
         return true;
     }
 
-    protected function changeFilesPackage($directory, $fromSegment, $toSegment)
+    protected function changeFilesPackageAndImports($directory, $fromSegment, $toSegment)
     {
         $files = File::allFiles($directory);
         foreach ($files as $file) {
             $content = $file->getContents();
+
             $content = preg_replace("/(package com\.cctutor\.app\.)(courses)(.*;)/", "$1$toSegment$3", $content);
+
+            $content = preg_replace("/(import com\.cctutor\.app\.)(courses)(.*;)/", "$1$toSegment$3", $content);
 
             file_put_contents($file->getPathname(), $content);
         }
@@ -184,8 +187,7 @@ class CompilerConstructionAssistantService
         $currentDir = getcwd();
 
         chdir(storage_path('app/cctutor'));
-        // TODO: compile
-        exec("/opt/maven/bin/mvn -Dtest='com.cctutor.app.$username.$courseTitle.$lessonTitle.**' test 2>&1", $output, $exitCode);
+        [$output, $exitCode] = mvnTest("com.cctutor.app.$username.$courseTitle.$lessonTitle.**");
         chdir($currentDir);
 
         return [
