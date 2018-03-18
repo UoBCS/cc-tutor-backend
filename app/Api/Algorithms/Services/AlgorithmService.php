@@ -58,4 +58,13 @@ class AlgorithmService
 
         return $machine->run();
     }
+
+    public function dfaOpsMembership(array $dfa, string $word) : array
+    {
+        $result = FiniteAutomaton::fromArray($dfa)->accepts($word);
+        return [
+            'breakpoints' => $this->inspector->getState('breakpoints'),
+            'is_member'   => $result
+        ];
+    }
 }

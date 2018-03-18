@@ -232,6 +232,14 @@ class FiniteAutomaton implements JsonSerializable
         return DfaConverter::toDfa($this->initial);
     }
 
+    public function accepts(string $word) : bool
+    {
+        $inspector = inspector();
+        $inspector->createStore('breakpoints', 'array');
+
+        return $this->_accepts($word, $this->initial, $inspector);
+    }
+
     public function minimizeDfa()
     {
         $inspector = inspector();
@@ -367,5 +375,24 @@ class FiniteAutomaton implements JsonSerializable
         };
 
         return $this->traverse(NULL, NULL, $fn, '', 1);
+    }
+
+    private function _accepts(string $word, State $state, $inspector) : bool
+    {
+        if ($word === '') {
+            /* > */ $inspector->breakpoint('accepts_stop', [
+            /* > */    'result' => $state->isFinal(),
+            /* > */ ]);
+
+            return $state->isFinal();
+        }
+
+        $destState = $state->getState($word[0])[0];
+
+        /* > */ $inspector->breakpoint('accepts_step', [
+        /* > */    'transition' => ['src' => $state, 'char' => $word[0], 'dest' => $destState],
+        /* > */ ]);
+
+        return $this->_accepts(substr($word, 1), $destState, $inspector);
     }
 }

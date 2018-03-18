@@ -150,7 +150,7 @@ class State implements JsonSerializable
             }
         }
 
-        return $outStates->toArray(); //isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : [];
+        return $outStates->toArray();
     }
 
     public function setJsonSerializeOptions(array $jsonSerializeOptions)

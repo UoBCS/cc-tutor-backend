@@ -4,6 +4,7 @@ namespace App\Api\Algorithms\Controllers;
 
 use App\Api\Algorithms\Requests\CekMachineRunRequest;
 use App\Api\Algorithms\Requests\DfaRequest;
+use App\Api\Algorithms\Requests\DfaOpsMembershipRequest;
 use App\Api\Algorithms\Requests\NfaRequest;
 use App\Api\Algorithms\Services\AlgorithmService;
 use App\Infrastructure\Http\Controller;
@@ -53,8 +54,10 @@ class AlgorithmController extends Controller
         return $this->response($result);
     }
 
-    public function dfaOpsMembership(DfaRequest $request)
+    public function dfaOpsMembership(DfaOpsMembershipRequest $request)
     {
+        $result = $this->service->dfaOpsMembership($request->input('dfa'), $request->input('word'));
 
+        return $this->response($result);
     }
 }

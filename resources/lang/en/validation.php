@@ -90,6 +90,7 @@ return [
 
     'token_types' => 'The :attribute is not correctly formatted.',
     'grammar'     => 'The :attribute is not correctly formatted.',
+    'fa'          => 'The :attribute is not a valid finite automaton.',
 
     /*
     |--------------------------------------------------------------------------
