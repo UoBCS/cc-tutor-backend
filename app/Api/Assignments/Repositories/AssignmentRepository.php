@@ -5,6 +5,7 @@ namespace App\Api\Assignments\Repositories;
 use App\Api\Assignments\Models\Assignment;
 use App\Api\Users\Models\User;
 use App\Core\Automata\FiniteAutomaton;
+use App\Core\Syntax\Regex\PlainRegex;
 use App\Infrastructure\Http\Crud\Repository;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +90,16 @@ class AssignmentRepository extends Repository
 
                     Storage::put($filePath, $content);
                 }
+                break;
+
+            case 'regex_to_nfa':
+                $inputFilePath = joinPaths($directory, "input_$type.json");
+                Storage::put($inputFilePath, json_encode(['regex' => $extra['content']]));
+
+                $breakpointsFilePath = joinPaths($directory, "breakpoints_$type.json");
+                $nfa = FiniteAutomaton::fromRegex(new PlainRegex($extra['content']));
+                $inspector = inspector();
+                Storage::put($breakpointsFilePath, json_encode($inspector->getState('breakpoints')));
                 break;
 
             case 'nfa_to_dfa':

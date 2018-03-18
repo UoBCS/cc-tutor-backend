@@ -179,6 +179,7 @@ return [
         App\Api\Users\UserServiceProvider::class,
         App\Api\Phases\PhaseServiceProvider::class,
         App\Core\InspectorServiceProvider::class,
+        App\Infrastructure\AppServiceProvider::class,
         App\Infrastructure\Auth\AuthServiceProvider::class,
         App\Infrastructure\Http\Providers\RouteServiceProvider::class,
 

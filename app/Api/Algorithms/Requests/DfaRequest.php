@@ -4,7 +4,7 @@ namespace App\Api\Algorithms\Requests;
 
 use App\Infrastructure\Http\ApiRequest;
 
-class NfaToDfaRequest extends ApiRequest
+class DfaRequest extends ApiRequest
 {
     public function authorize()
     {
@@ -14,7 +14,7 @@ class NfaToDfaRequest extends ApiRequest
     public function rules()
     {
         return [
-            'nfa' => 'required|array'
+            'dfa' => 'required|fa',
         ];
     }
 }
