@@ -212,7 +212,7 @@ class FiniteAutomaton implements JsonSerializable
             return $id;
         };
 
-        $this->traverse($fn, 0, NULL, NULL);
+        $this->traverse($fn, 0, null, null);
     }
 
     public function setDataOnFinalStates(TokenType $token)
@@ -223,7 +223,7 @@ class FiniteAutomaton implements JsonSerializable
             }
         };
 
-        $this->traverse($fn, 0, NULL, NULL);
+        $this->traverse($fn, 0, null, null);
     }
 
     public function toDfa()
@@ -374,7 +374,7 @@ class FiniteAutomaton implements JsonSerializable
             return $str . "($src, $c, $dest)\n";
         };
 
-        return $this->traverse(NULL, NULL, $fn, '', 1);
+        return $this->traverse(null, null, $fn, '', 1);
     }
 
     private function _accepts(string $word, State $state, $inspector) : bool
