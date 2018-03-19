@@ -85,7 +85,11 @@ class LL1 extends DeterministicParser
             return false;
         }
 
-        /* > */ $this->inspector->breakpoint('parse_end', null);
+        /* > */ $this->inspector->breakpoint('parse_end', [
+        /* > */     'parse_tree'  => $this->getJsonParseTree(),
+        /* > */     'stack'       => array_map('getGrammarEntityName', $this->stack->toArray()),
+        /* > */     'input_index' => $this->input->getIndex(),
+        /* > */ ]);
 
         return true;
     }
