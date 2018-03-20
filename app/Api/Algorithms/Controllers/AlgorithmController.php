@@ -19,8 +19,6 @@ class AlgorithmController extends Controller
 
     public function regexToNfa($regex)
     {
-        // TODO: Regex validation
-
         $result = $this->service->regexToNfa($regex);
 
         return $this->response($result);
