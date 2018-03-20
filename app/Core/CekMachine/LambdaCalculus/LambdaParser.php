@@ -42,8 +42,6 @@ class LambdaParser
 
     private function application()
     {
-        //(λx.x)1
-
         $lhs = $this->atom();
 
         while (true) {
