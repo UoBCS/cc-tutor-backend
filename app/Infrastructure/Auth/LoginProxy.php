@@ -43,8 +43,6 @@ class LoginProxy
     {
         $user = $this->userRepository->getWhere('email', $email)->first();
 
-        var_dump($user);
-
         if (!is_null($user)) {
             return $this->proxy('password', [
                 'username' => $email,
@@ -82,8 +80,6 @@ class LoginProxy
             'grant_type'    => $grantType,
             'scope'         => '*'
         ]);
-
-        var_dump($data);
 
         try {
             $client = new Client();
