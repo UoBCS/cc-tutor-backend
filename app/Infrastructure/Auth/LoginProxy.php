@@ -41,11 +41,9 @@ class LoginProxy
      */
     public function attemptLogin($email, $password)
     {
-        var_dump('smdmsmdmsd');
-
         $user = $this->userRepository->getWhere('email', $email)->first();
 
-        var_dump('helooooosldlsd');
+        var_dump($user);
 
         if (!is_null($user)) {
             return $this->proxy('password', [
@@ -84,6 +82,8 @@ class LoginProxy
             'grant_type'    => $grantType,
             'scope'         => '*'
         ]);
+
+        var_dump($data);
 
         try {
             $client = new Client();
