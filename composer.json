@@ -59,6 +59,10 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "php artisan clear-compiled",
+            "php artisan optimize",
+            "chmod -R 777 storage",
+            "@php artisan passport:keys",
             "@php artisan package:discover"
         ]
     },
