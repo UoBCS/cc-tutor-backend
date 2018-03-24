@@ -1,12 +1,5 @@
 <?php
 
-$env = config('app.env');
-$url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-$host = $env === 'local' ? '127.0.0.1' : $url["host"];
-$username = $env === 'local' ? 'homestead' : $url["user"];
-$password = $env === 'local' ? 'secret' : $url["pass"];
-$database = $env === 'local' ? 'cc_tutor' : substr($url["path"], 1);
-
 return [
 
     /*
@@ -54,11 +47,11 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', $host),
+            'host' => env('DB_HOST', 'us-cdbr-iron-east-05.cleardb.net'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', $database),
-            'username' => env('DB_USERNAME', $username),
-            'password' => env('DB_PASSWORD', $password),
+            'database' => env('DB_DATABASE', 'heroku_f605dee8bfc839c'),
+            'username' => env('DB_USERNAME', 'b97e402caa1104'),
+            'password' => env('DB_PASSWORD', '9499a6d1'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
