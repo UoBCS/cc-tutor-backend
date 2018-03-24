@@ -17,7 +17,7 @@ return [
         SymfonyException\NotFoundHttpException::class => ExtFormatters\NotFoundHttpExceptionFormatter::class,
         SymfonyException\ConflictHttpException::class => ExtFormatters\ConflictHttpExceptionFormatter::class,
         SymfonyException\HttpException::class => BaseFormatters\HttpExceptionFormatter::class,
-        //Exception::class => BaseFormatters\ExceptionFormatter::class,
+        Exception::class => BaseFormatters\ExceptionFormatter::class,
     ],
 
     'response_factory' => \Optimus\Heimdal\ResponseFactory::class,
