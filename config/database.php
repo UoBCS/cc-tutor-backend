@@ -15,6 +15,12 @@ return [
 
     'default' => env('DB_CONNECTION', 'mysql'),
 
+    'sqlite_testing' => [
+        'driver'   => 'sqlite',
+        'database' => ':memory:',
+        'prefix'   => '',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections
