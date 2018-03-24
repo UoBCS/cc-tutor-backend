@@ -41,7 +41,11 @@ class LoginProxy
      */
     public function attemptLogin($email, $password)
     {
+        var_dump('smdmsmdmsd');
+
         $user = $this->userRepository->getWhere('email', $email)->first();
+
+        var_dump('helooooosldlsd');
 
         if (!is_null($user)) {
             return $this->proxy('password', [
