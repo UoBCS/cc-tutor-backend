@@ -47,11 +47,11 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', 'us-cdbr-iron-east-05.cleardb.net'),
+            'host' => env('DB_HOST', 'xq7t6tasopo9xxbs.cbetxkdyhwsb.us-east-1.rds.amazonaws.com'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'heroku_f605dee8bfc839c'),
-            'username' => env('DB_USERNAME', 'b97e402caa1104'),
-            'password' => env('DB_PASSWORD', '9499a6d1'),
+            'database' => env('DB_DATABASE', 'w0bgrtlvrh24zzux'),
+            'username' => env('DB_USERNAME', 's36r6kg1wptu1y77'),
+            'password' => env('DB_PASSWORD', 'umo9ciifdp0vzxu1'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
