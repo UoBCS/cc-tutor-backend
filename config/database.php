@@ -2,10 +2,10 @@
 
 $env = config('app.env');
 $url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-$host = $url["host"];
-$username = $url["user"];
-$password = $url["pass"];
-$database = substr($url["path"], 1);
+$host = $env === 'local' ? '127.0.0.1' : $url["host"];
+$username = $env === 'local' ? 'homestead' : $url["user"];
+$password = $env === 'local' ? 'secret' : $url["pass"];
+$database = $env === 'local' ? 'cc_tutor' : substr($url["path"], 1);
 
 return [
 
