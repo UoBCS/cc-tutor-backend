@@ -59,7 +59,6 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan passport:keys",
             "@php artisan package:discover"
         ]
     },
