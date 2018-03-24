@@ -2,13 +2,16 @@
 
 namespace App\Infrastructure;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        Schema::defaultStringLength(191);
+
         Validator::extend('token_types', function ($attribute, $value, $parameters, $validator) {
             if (!is_array($value)) {
                 return false;
