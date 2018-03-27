@@ -29,8 +29,8 @@ abstract class Regex implements JsonSerializable
                 'children' => [
                     $this->getInternal(),
                     [
-                        'name' => 'REP',
-                        'children' => $this->getInternal()
+                        'name'     => 'REP',
+                        'children' => [$this->getInternal()]
                     ]
                 ]
             ];
@@ -51,15 +51,6 @@ abstract class Regex implements JsonSerializable
                 ]
             ];
         } else if ($this instanceof GroupItems) {
-            /*$items = $this->getItems();
-            $is = [];
-
-            for ($i = 0; $i < count($items); $i++) {
-                $is[] = $items[$i];
-            }
-
-            return $faBuilder;*/
-
             return [
                 'name' => 'OR',
                 'children' => $this->getItems()

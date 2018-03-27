@@ -61,11 +61,18 @@ class RegexParser
 
     private function term()
     {
-        $factor = new TreeTypes\Blank();
+        $factor = null;
+        $i = 0;
 
         while ($this->more() && $this->peek() !== ')' && $this->peek() !== '|') {
-            $nextFactor = $this->factor();
-            $factor = new TreeTypes\Sequence($factor, $nextFactor);
+            if ($i !== 0) {
+                $nextFactor = $this->factor();
+                $factor = new TreeTypes\Sequence($factor, $nextFactor);
+            } else {
+                $factor = $this->factor();
+            }
+
+            $i++;
         }
 
         return $factor;

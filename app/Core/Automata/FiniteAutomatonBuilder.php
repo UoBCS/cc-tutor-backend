@@ -164,7 +164,7 @@ class FiniteAutomatonBuilder
 
             return FiniteAutomatonBuilder::c("[$a-$b]");
         } else if ($regexTree instanceof TreeTypes\Primitive) {
-            return FiniteAutomatonBuilder::c($regexTree->getChar()); //new Char(((Primitive) regexTree).getChar()));
+            return FiniteAutomatonBuilder::c($regexTree->getChar());
         } else if ($regexTree instanceof TreeTypes\AnyChar) {
             return FiniteAutomatonBuilder::c('[ANY]');
         } else {
