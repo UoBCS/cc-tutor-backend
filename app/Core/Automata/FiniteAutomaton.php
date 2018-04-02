@@ -40,7 +40,7 @@ class FiniteAutomaton implements JsonSerializable
         return $nfa;
     }
 
-    public static function fromRegex(Regex\IRegex $regex, bool $returnRegexTree = false)
+    public static function fromRegex(Regex\IRegex $regex, bool $returnRegexTree = true)
     {
         // Build regex tree
         $regexParser = new Regex\RegexParser($regex->getRegex());
@@ -57,10 +57,9 @@ class FiniteAutomaton implements JsonSerializable
             $fa->setDataOnFinalStates($regex);
         }
 
-        return [
-            'nfa'        => $fa,
-            'regex_tree' => $regexTree
-        ];
+        return $returnRegexTree
+                ? ['nfa' => $fa, 'regex_tree' => $regexTree]
+                : $fa;
     }
 
     public static function fromArray($arr)
@@ -120,12 +119,12 @@ class FiniteAutomaton implements JsonSerializable
         $this->initial = $initial;
     }
 
-    public function generateAlphabet()
+    public function generateAlphabet() : Set
     {
         $chars = new Set();
 
         $fn = function ($src, $c, $dest, $arr) use ($chars) {
-            $chars->add($c); // TODO: account for any and ranges
+            $chars->add($c);
         };
 
         $this->traverse(null, null, $fn, null);
@@ -133,7 +132,6 @@ class FiniteAutomaton implements JsonSerializable
         return $chars;
     }
 
-    // TODO: account for any and ranges
     public function isErrorStateUnreachable()
     {
         $foundDifference = false;
@@ -364,6 +362,30 @@ class FiniteAutomaton implements JsonSerializable
         };
 
         return $this->traverse(null, null, $fn, [], 1);
+    }
+
+    public function toArray()
+    {
+        $states = [];
+
+        $fnStates = function ($state) use (&$states) {
+            $states[] = $state->jsonSerialize();
+        };
+
+        $fnTransitions = function ($src, $c, $dest) use (&$transitions) {
+            $transitions[] = [
+                'src'  => $src->getId(),
+                'char' => $c,
+                'dest' => $dest->getId()
+            ];
+        };
+
+        $this->traverse($fnStates, null, $fnTransitions, null);
+
+        return [
+            'states'      => $states,
+            'transitions' => $transitions
+        ];
     }
 
     public function __toString()

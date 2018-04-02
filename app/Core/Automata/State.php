@@ -179,16 +179,6 @@ class State implements JsonSerializable
 
     private function _addTransition(self $state, string $c)
     {
-        /*for (Char c : cs) {
-            Transition transition = new Transition(state, c);
-            int i = transitions.indexOf(transition);
-            if (i == -1) { // !transitions.contains(transition)
-                transitions.add(transition);
-            } else if (c.any || c instanceof  RangeChar) {
-                transitions.get(i).setChar(c); // Update for inclusiveness
-            }
-        }*/
-
         $states = new Set(isset($this->connectedStates[$c]) ? $this->connectedStates[$c] : []);
         $states->add($state);
         $this->connectedStates[$c] = $states->toArray();
