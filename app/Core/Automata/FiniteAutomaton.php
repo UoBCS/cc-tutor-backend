@@ -409,7 +409,13 @@ class FiniteAutomaton implements JsonSerializable
             return $state->isFinal();
         }
 
-        $destState = $state->getState($word[0])[0];
+        $states = $state->getState($word[0]);
+
+        if (count($states) === 0) {
+            return false;
+        }
+
+        $destState = $states[0];
 
         /* > */ $inspector->breakpoint('accepts_step', [
         /* > */    'transition' => ['src' => $state, 'char' => $word[0], 'dest' => $destState],

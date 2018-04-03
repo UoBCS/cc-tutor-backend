@@ -108,10 +108,53 @@ class FiniteAutomatonTest extends TestCase
         $this->assertEquals($expected, FiniteAutomaton::fromArray($dfa)->accepts($word));
     }
 
-    /*public function testMinimizeDfa() : void
+    /**
+     * @dataProvider dfaMinimizationDataProvider
+     */
+    public function testDfaMinimization($dfa, $expectedMinDfa) : void
     {
+        $dfaObj = FiniteAutomaton::fromArray($dfa);
+        $dfaObj->minimizeDfa();
 
-    }*/
+        $this->assertEquals($expectedMinDfa, $this->normalizeData($dfaObj->toArray()));
+    }
+
+    public function dfaMinimizationDataProvider() : array
+    {
+        $dfa1 = [
+            'states' => [
+                ['id' => 0, 'final' => false],
+                ['id' => 1, 'final' => false],
+                ['id' => 2, 'final' => false],
+                ['id' => 3, 'final' => true]
+            ],
+            'transitions' => [
+                ['src' => 0, 'char' => 'a', 'dest' => 1],
+                ['src' => 0, 'char' => 'b', 'dest' => 2],
+                ['src' => 1, 'char' => 'c', 'dest' => 3],
+                ['src' => 2, 'char' => 'a', 'dest' => 3]
+            ]
+        ];
+
+        $minDfa1 = [
+            'states' => [
+                ['id' => 0, 'final' => false],
+                ['id' => 2, 'final' => false],
+                ['id' => 3, 'final' => true],
+                ['id' => 1, 'final' => false]
+            ],
+            'transitions' => [
+                ['src' => 0, 'char' => 'a', 'dest' => 1],
+                ['src' => 0, 'char' => 'b', 'dest' => 2],
+                ['src' => 2, 'char' => 'a', 'dest' => 3],
+                ['src' => 1, 'char' => 'c', 'dest' => 3]
+            ]
+        ];
+
+        return [
+            [$dfa1, $minDfa1]
+        ];
+    }
 
     public function acceptsDataProvider() : array
     {
@@ -127,8 +170,45 @@ class FiniteAutomatonTest extends TestCase
             ]
         ];
 
+        $dfa2 = [
+            'states' => [
+                ['id' => 0, 'final' => false],
+                ['id' => 1, 'final' => false],
+                ['id' => 2, 'final' => true]
+            ],
+            'transitions' => [
+                ['src' => 0, 'char' => 'a', 'dest' => 1],
+                ['src' => 1, 'char' => 'b', 'dest' => 1],
+                ['src' => 1, 'char' => 'a', 'dest' => 2]
+            ]
+        ];
+
+        $dfa3 = [
+            'states' => [
+                ['id' => 0, 'final' => false],
+                ['id' => 1, 'final' => true]
+            ],
+            'transitions' => [
+                ['src' => 0, 'char' => 'a', 'dest' => 1],
+                ['src' => 1, 'char' => 'b', 'dest' => 1]
+            ]
+        ];
+
+        $dfa4 = [
+            'states' => [
+                ['id' => 0, 'final' => false],
+                ['id' => 1, 'final' => true]
+            ],
+            'transitions' => [
+                ['src' => 0, 'char' => 'b', 'dest' => 1]
+            ]
+        ];
+
         return [
-            [$dfa1, 'ab', true]
+            [$dfa1, 'ab', true],
+            [$dfa2, 'abbba', true],
+            [$dfa3, 'abbba', false],
+            [$dfa4, 'baaaaaaaaaa', false]
         ];
     }
 
