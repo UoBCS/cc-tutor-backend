@@ -66,11 +66,26 @@ class RegexParserTest extends TestCase
             ]
         ];
 
+        $tree5 = [
+            'name' => 'REP',
+            'children' => [
+                [
+                    'name' => 'OR',
+                    'children' => [
+                        ['name' => '[0-9]'],
+                        ['name' => '[a-z]'],
+                        ['name' => '[A-z]']
+                    ]
+                ]
+            ]
+        ];
+
         return [
             ['abc', $tree1],
             ['(ab)?', $tree2],
             ['a|b', $tree3],
-            ['.+', $tree4]
+            ['.+', $tree4],
+            ['[0-9a-zA-z]*', $tree5]
         ];
     }
 }
