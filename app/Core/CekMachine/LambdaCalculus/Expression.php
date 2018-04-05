@@ -4,6 +4,9 @@ namespace App\Core\CekMachine\LambdaCalculus;
 
 use App\Core\Exceptions\CekMachineException;
 
+/**
+ * Represents a lambda expression
+ */
 abstract class Expression
 {
     public abstract function reducible() : bool;

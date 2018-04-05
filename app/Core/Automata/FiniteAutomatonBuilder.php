@@ -6,25 +6,45 @@ use App\Core\Inspector;
 use App\Core\Syntax\Regex\TreeTypes;
 use Exception;
 
+/**
+ * Helper class to build a finite automaton from regular expressions
+ */
 class FiniteAutomatonBuilder
 {
     public $entry;
     public $exit;
     private static $inspector;
 
+    /**
+     * Create a new finite automaton builder
+     *
+     * @param State $entry The entry state
+     * @param State $exit  The exit state
+     */
     public function __construct(State $entry, State $exit)
     {
         $this->entry = $entry;
         $this->exit = $exit;
     }
 
+    /**
+     * Initializes the breakpoints storage
+     *
+     * @return void
+     */
     public static function init()
     {
         self::$inspector = inspector();
         self::$inspector->createStore('breakpoints', 'array');
     }
 
-    public static function c(string $c)
+    /**
+     * Creates a character fragment
+     *
+     * @param string $c
+     * @return self
+     */
+    public static function c(string $c) : self
     {
         $entry = new State();
         $exit = new State();
@@ -40,7 +60,12 @@ class FiniteAutomatonBuilder
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 
-    public static function e()
+    /**
+     * Creates an epsilon fragment
+     *
+     * @return self
+     */
+    public static function e() : self
     {
         $entry  = new State();
         $exit = new State();
@@ -56,7 +81,13 @@ class FiniteAutomatonBuilder
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 
-    public static function rep(self $nfa)
+    /**
+     * Creates a repetition fragment
+     *
+     * @param self $nfa
+     * @return self
+     */
+    public static function rep(self $nfa) : self
     {
         $nfa->exit->addTransition($nfa->entry);
         $nfa->entry->addTransition($nfa->exit);
@@ -69,7 +100,14 @@ class FiniteAutomatonBuilder
         return $nfa;
     }
 
-    public static function s(self $first, self $second)
+    /**
+     * Creates a sequence fragment
+     *
+     * @param self $first
+     * @param self $second
+     * @return self
+     */
+    public static function s(self $first, self $second) : self
     {
         $first->exit->setFinal(false);
         $second->exit->setFinal();
@@ -84,7 +122,14 @@ class FiniteAutomatonBuilder
         return new FiniteAutomatonBuilder($first->entry, $second->exit);
     }
 
-    public static function or(self $choice1, self $choice2)
+    /**
+     * Creates a choice fragment
+     *
+     * @param self $choice1
+     * @param self $choice2
+     * @return self
+     */
+    public static function or(self $choice1, self $choice2) : self
     {
         $choice1->exit->setFinal(false);
         $choice2->exit->setFinal(false);
@@ -117,7 +162,13 @@ class FiniteAutomatonBuilder
         return new FiniteAutomatonBuilder($entry, $exit);
     }
 
-    public static function fromRegexTree(TreeTypes\Regex $regexTree)
+    /**
+     * Creates a finite automaton from a regular expression parse tree
+     *
+     * @param TreeTypes\Regex $regexTree
+     * @return self
+     */
+    public static function fromRegexTree(TreeTypes\Regex $regexTree) : self
     {
         if ($regexTree instanceof TreeTypes\Choice) {
             return FiniteAutomatonBuilder::or(
@@ -172,7 +223,12 @@ class FiniteAutomatonBuilder
         }
     }
 
-    public function getFiniteAutomaton()
+    /**
+     * Returns the actual finite automaton
+     *
+     * @return FiniteAutomaton
+     */
+    public function getFiniteAutomaton() : FiniteAutomaton
     {
         return new FiniteAutomaton($this->entry);
     }

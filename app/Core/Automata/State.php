@@ -6,6 +6,9 @@ use App\Core\Syntax\Char;
 use Ds\Set;
 use JsonSerializable;
 
+/**
+ * Represents a state in a finite automaton
+ */
 class State implements JsonSerializable
 {
     protected $id;
@@ -17,66 +20,134 @@ class State implements JsonSerializable
         'showData' => true
     ];
 
+    /**
+     * Creates a new state
+     *
+     * @param integer $id The ID of the state
+     * @param array $data The data associated with the state
+     */
     public function __construct(int $id = null, array $data = [])
     {
         $this->id = $id;
         $this->data = $data;
     }
 
+    /**
+     * Returns an error state
+     *
+     * @return self
+     */
     public static function error() : self
     {
         $state = new State();
-        $state->id      = -1;
+        $state->id = -1;
         $state->isError = true;
         return $state;
     }
 
-    public function getId()
+    /**
+     * Returns the ID
+     *
+     * @return integer
+     */
+    public function getId() : int
     {
         return $this->id;
     }
 
-    public function setId(int $id)
+    /**
+     * Sets the ID
+     *
+     * @param integer $id
+     * @return void
+     */
+    public function setId(int $id) : void
     {
         $this->id = $id;
     }
 
+    /**
+     * Returns the data associated with the state
+     *
+     * @return mixed
+     */
     public function getData()
     {
         return $this->data;
     }
 
-    public function setData($data)
+    /**
+     * Sets the data associated with the state
+     *
+     * @param mixed $data
+     * @return void
+     */
+    public function setData($data) : void
     {
         $this->data = $data;
     }
 
-    public function isFinal()
+    /**
+     * Checks if the state is final
+     *
+     * @return boolean
+     */
+    public function isFinal() : bool
     {
         return $this->isFinal;
     }
 
-    public function setFinal(bool $isFinal = true)
+    /**
+     * Sets the state type
+     *
+     * @param boolean $isFinal
+     * @return void
+     */
+    public function setFinal(bool $isFinal = true) : void
     {
         $this->isFinal = $isFinal;
     }
 
-    public function isError()
+    /**
+     * Checks whether the state is an error one
+     *
+     * @return boolean
+     */
+    public function isError() : bool
     {
         return $this->isError;
     }
 
+    /**
+     * Gets the connected states
+     *
+     * @param mixed $c The transition character
+     * @return mixed
+     */
     public function getConnectedStates($c = null)
     {
         return $c === null ? $this->connectedStates : $this->connectedStates[$c];
     }
 
-    public function hasTransition($c)
+    /**
+     * Checks if there is a transition from the state
+     *
+     * @param mixed $c
+     * @return boolean
+     */
+    public function hasTransition($c) : bool
     {
         return array_key_exists($c, $this->connectedStates);
     }
 
-    public function addTransition(self $state, $cs = [])
+    /**
+     * Adds transitions to the state
+     *
+     * @param self $state
+     * @param array $cs
+     * @return void
+     */
+    public function addTransition(self $state, array $cs = []) : void
     {
         if (!is_array($cs)) {
             $cs = [$cs];
@@ -91,14 +162,27 @@ class State implements JsonSerializable
         }
     }
 
-    public function removeAllTransitions(self $state)
+    /**
+     * Removes all transitions pointing to a specified state
+     *
+     * @param self $state
+     * @return void
+     */
+    public function removeAllTransitions(self $state) : void
     {
         foreach ($this->getChars() as $char) {
             $this->removeTransition($state, $char);
         }
     }
 
-    public function removeTransition(self $state, $c)
+    /**
+     * Removes a specific transition pointing to a specified state
+     *
+     * @param self $state
+     * @param mixed $c
+     * @return void
+     */
+    public function removeTransition(self $state, $c) : void
     {
         if (!isset($this->connectedStates[$c])) {
             return;
@@ -109,17 +193,33 @@ class State implements JsonSerializable
         $this->connectedStates[$c] = $states;
     }
 
-    public function resetTransitions()
+    /**
+     * Resets the connected states
+     *
+     * @return void
+     */
+    public function resetTransitions() : void
     {
         $this->connectedStates = [];
     }
 
+    /**
+     * Gets the transitions' characters from this state
+     *
+     * @return array
+     */
     public function getChars() : array
     {
         $charSet = new Set(array_keys($this->connectedStates));
         return $charSet->toArray();
     }
 
+    /**
+     * Gets states from the transition character
+     *
+     * @param string $c
+     * @return array
+     */
     public function getState(string $c) : array
     {
         if ($c === '[ANY]') {
@@ -153,7 +253,13 @@ class State implements JsonSerializable
         return $outStates->toArray();
     }
 
-    public function setJsonSerializeOptions(array $jsonSerializeOptions)
+    /**
+     * Sets the options for the JSON serialization
+     *
+     * @param array $jsonSerializeOptions
+     * @return void
+     */
+    public function setJsonSerializeOptions(array $jsonSerializeOptions) : void
     {
         $this->jsonSerializeOptions = $jsonSerializeOptions;
     }

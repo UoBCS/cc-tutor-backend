@@ -6,6 +6,9 @@ use Ds\Map;
 use Ds\Set;
 use Ds\Stack;
 
+/**
+ * Helper class for converting an NFA to a DFA
+ */
 class DfaConverter
 {
     private static $inspector;
@@ -16,7 +19,13 @@ class DfaConverter
         self::$inspector->createStore('breakpoints', 'array');
     }
 
-    public static function toDfa(State $initial)
+    /**
+     * Converts an NFA to a DFA give the initial state in the NFA
+     *
+     * @param State $initial
+     * @return FiniteAutomaton
+     */
+    public static function toDfa(State $initial) : FiniteAutomaton
     {
         /* > */ self::$inspector->breakpoint('highlight_initial_nfa_state', [ 'state' => $initial ]);
 

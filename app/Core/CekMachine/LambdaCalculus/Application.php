@@ -5,11 +5,20 @@ namespace App\Core\CekMachine\LambdaCalculus;
 use Ds\Set;
 use JsonSerializable;
 
+/**
+ * Represents a lambda function application
+ */
 class Application extends Expression implements JsonSerializable
 {
     private $function;
     private $argument;
 
+    /**
+     * Creates a new function application
+     *
+     * @param Expression $function
+     * @param Expression $argument
+     */
     public function __construct(Expression $function, Expression $argument)
     {
         $this->function = $function;

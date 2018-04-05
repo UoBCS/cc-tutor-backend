@@ -5,17 +5,32 @@ namespace App\Core\CekMachine;
 use App\Core\CekMachine\LambdaCalculus\Variable;
 use JsonSerializable;
 
+/**
+ * Represents a binding in an environment
+ */
 class Binding implements JsonSerializable
 {
     private $variable;
     private $value;
 
+    /**
+     * Creates a new binding
+     *
+     * @param Variable $variable
+     * @param Value $value
+     */
     public function __construct(Variable $variable, Value $value)
     {
         $this->variable = $variable;
         $this->value = $value;
     }
 
+    /**
+     * Creates a new binding from JSON data
+     *
+     * @param array $data
+     * @return self
+     */
     public static function fromJson(array $data) : self
     {
         return new Binding(
@@ -26,22 +41,44 @@ class Binding implements JsonSerializable
         );
     }
 
+    /**
+     * Gets the variable associated with the binding
+     *
+     * @return Variable
+     */
     public function getVariable() : Variable
     {
         return $this->variable;
     }
 
-    public function setVariable(Variable $value)
+    /**
+     * Sets the variable associated with the binding
+     *
+     * @param Variable $value
+     * @return void
+     */
+    public function setVariable(Variable $value) : void
     {
         $this->variable = $variable;
     }
 
+    /**
+     * Gets the value associated with the binding
+     *
+     * @return Value
+     */
     public function getValue() : Value
     {
         return $this->value;
     }
 
-    public function setValue(Value $value)
+    /**
+     * Sets the value associated with the binding
+     *
+     * @param Value $value
+     * @return void
+     */
+    public function setValue(Value $value) : void
     {
         $this->value = $value;
     }

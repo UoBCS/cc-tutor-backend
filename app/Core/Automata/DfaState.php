@@ -5,6 +5,9 @@ namespace App\Core\Automata;
 use Ds\Set;
 use JsonSerializable;
 
+/**
+ * Represents a state in a deterministic finite automaton
+ */
 class DfaState extends State implements JsonSerializable
 {
     public $serialization = [

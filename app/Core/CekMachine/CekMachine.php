@@ -12,12 +12,22 @@ use App\Infrastructure\Utils\Ds\Pair;
 use Ds\Stack;
 use JsonSerializable;
 
+/**
+ * Represents a CEK machine
+ */
 class CekMachine implements JsonSerializable
 {
     private $control;
     private $environment;
     private $continuation;
 
+    /**
+     * Creates a new CEK machine
+     *
+     * @param mixed $control
+     * @param Environment $environment
+     * @param Stack $continuation
+     */
     public function __construct($control, Environment $environment, Stack $continuation)
     {
         $this->control = $control;
@@ -25,6 +35,12 @@ class CekMachine implements JsonSerializable
         $this->continuation = $continuation;
     }
 
+    /**
+     * Creates a new CEK machine from JSON data
+     *
+     * @param array $data
+     * @return self
+     */
     public static function fromJson(array $data) : self
     {
         $control = null;

@@ -13,12 +13,21 @@ use Ds\Set;
 use Ds\Stack;
 use JsonSerializable;
 
+/**
+ * Represents a finite automaton
+ */
 class FiniteAutomaton implements JsonSerializable
 {
     private $initial;
     private $errorState;
     private $alphabet;
 
+    /**
+     * Creates a new finite automaton
+     *
+     * @param State $initial
+     * @param Set $alphabet
+     */
     public function __construct(State $initial, Set $alphabet = null)
     {
         $this->initial    = $initial;
@@ -26,7 +35,13 @@ class FiniteAutomaton implements JsonSerializable
         $this->errorState = State::error();
     }
 
-    public static function combine(array $fas)
+    /**
+     * Combines an array of finite automata
+     *
+     * @param array $fas
+     * @return self
+     */
+    public static function combine(array $fas) : self
     {
         $combinator = new State();
 
@@ -40,6 +55,13 @@ class FiniteAutomaton implements JsonSerializable
         return $nfa;
     }
 
+    /**
+     * Constructs a finite automaton from a regular expression
+     *
+     * @param Regex\IRegex $regex
+     * @param boolean $returnRegexTree
+     * @return mixed
+     */
     public static function fromRegex(Regex\IRegex $regex, bool $returnRegexTree = true)
     {
         // Build regex tree
@@ -62,7 +84,13 @@ class FiniteAutomaton implements JsonSerializable
                 : $fa;
     }
 
-    public static function fromArray($arr)
+    /**
+     * Constructs a finite automaton from the array representation
+     *
+     * @param array $arr
+     * @return self
+     */
+    public static function fromArray(array $arr) : self
     {
         $states = [];
         $notFlat = isset($arr['states']) && isset($arr['transitions']);
@@ -109,16 +137,32 @@ class FiniteAutomaton implements JsonSerializable
         return new FiniteAutomaton($states[0]);
     }
 
-    public function getInitial()
+    /**
+     * Returns the initial state
+     *
+     * @return State
+     */
+    public function getInitial() : State
     {
         return $this->initial;
     }
 
-    public function setInitial(State $initial)
+    /**
+     * Sets the initial state
+     *
+     * @param State $initial
+     * @return void
+     */
+    public function setInitial(State $initial) : void
     {
         $this->initial = $initial;
     }
 
+    /**
+     * Generate the alphabet of the finite automaton
+     *
+     * @return Set
+     */
     public function generateAlphabet() : Set
     {
         $chars = new Set();
@@ -132,7 +176,12 @@ class FiniteAutomaton implements JsonSerializable
         return $chars;
     }
 
-    public function isErrorStateUnreachable()
+    /**
+     * Checks if the error state is unreachable
+     *
+     * @return boolean
+     */
+    public function isErrorStateUnreachable() : bool
     {
         $foundDifference = false;
 
@@ -148,7 +197,12 @@ class FiniteAutomaton implements JsonSerializable
         return !$foundDifference;
     }
 
-    public function isDeterministic()
+    /**
+     * Checks if the finite automaton is deterministic
+     *
+     * @return boolean
+     */
+    public function isDeterministic() : bool
     {
         $fn = function ($s, $data) {
             foreach ($s->getConnectedStates() as $char => $states) {
@@ -163,6 +217,16 @@ class FiniteAutomaton implements JsonSerializable
         return $this->traverse($fn, true, null, null, 0);
     }
 
+    /**
+     * Traverses the finite automaton
+     *
+     * @param callable $fn1
+     * @param mixed $data1
+     * @param callable $fn2
+     * @param mixed $data2
+     * @param integer $return
+     * @return mixed
+     */
     public function traverse($fn1, $data1, $fn2, $data2, $return = -1)
     {
         $S = new Stack();
@@ -203,7 +267,12 @@ class FiniteAutomaton implements JsonSerializable
         }
     }
 
-    public function setIds()
+    /**
+     * Sets incremental state IDs in the automaton
+     *
+     * @return void
+     */
+    public function setIds() : void
     {
         $fn = function ($s, $id) {
             $s->setId($id++);
@@ -213,6 +282,12 @@ class FiniteAutomaton implements JsonSerializable
         $this->traverse($fn, 0, null, null);
     }
 
+    /**
+     * Sets token data in final states
+     *
+     * @param TokenType $token
+     * @return void
+     */
     public function setDataOnFinalStates(TokenType $token)
     {
         $fn = function ($s) use ($token) {
@@ -224,12 +299,23 @@ class FiniteAutomaton implements JsonSerializable
         $this->traverse($fn, 0, null, null);
     }
 
-    public function toDfa()
+    /**
+     * Converts a non-deterministic finite automaton to a deterministic one
+     *
+     * @return self
+     */
+    public function toDfa() : self
     {
         DfaConverter::init();
         return DfaConverter::toDfa($this->initial);
     }
 
+    /**
+     * Checks whether the automaton accepts the given word
+     *
+     * @param string $word
+     * @return boolean
+     */
     public function accepts(string $word) : bool
     {
         $inspector = inspector();
@@ -238,7 +324,12 @@ class FiniteAutomaton implements JsonSerializable
         return $this->_accepts($word, $this->initial, $inspector);
     }
 
-    public function minimizeDfa()
+    /**
+     * Minimizes the DFA
+     *
+     * @return array
+     */
+    public function minimizeDfa() : array
     {
         $inspector = inspector();
         $inspector->createStore('breakpoints', 'array');

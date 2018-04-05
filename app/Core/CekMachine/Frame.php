@@ -6,15 +6,29 @@ use App\Core\CekMachine\LambdaCalculus\Expression;
 use App\Infrastructure\Utils\Ds\Pair;
 use JsonSerializable;
 
+/**
+ * Represents a frame in a continuation
+ */
 class Frame implements JsonSerializable
 {
     private $content;
 
+    /**
+     * Creates a new frame
+     *
+     * @param Pair $content
+     */
     public function __construct(Pair $content)
     {
         $this->content = $content;
     }
 
+    /**
+     * Creates a new frame from JSON data
+     *
+     * @param array $data
+     * @return self
+     */
     public static function fromJson(array $data) : self
     {
         if ($data[0] === null) {
@@ -34,6 +48,11 @@ class Frame implements JsonSerializable
         return new Frame($pair);
     }
 
+    /**
+     * Get the contents of the frame
+     *
+     * @return Pair
+     */
     public function getContent() : Pair
     {
         return $this->content;
