@@ -17,7 +17,9 @@ class CekMachineTest extends TestCase
         $cekMachine->nextStep();
 
         $actual = json_decode(json_encode($cekMachine), true);
-        $expected['control'] = json_decode(json_encode(Lambda::parse($expected['control'])), true);
+        $expected['control'] = is_string($expected['control'])
+            ? json_decode(json_encode(Lambda::parse($expected['control'])), true)
+            : $expected['control'];
 
         $this->assertEquals($expected, $actual);
     }
@@ -38,8 +40,39 @@ class CekMachineTest extends TestCase
             ]
         ];
 
+        $input2 = [
+            'control' => '\x.x',
+            'environment' => [],
+            'continuation' => [
+                [null, [['type' => 'CONST', 'value' => 1], []]]
+            ]
+        ];
+
+        $output2 = [
+            'control' => [
+                'type' => 'CLOSURE',
+                'function' => [
+                    'type' => 'FUNC',
+                    'name' => [
+                        'type' => 'VAR',
+                        'name' => 'x'
+                    ],
+                    'body' => [
+                        'type' => 'VAR',
+                        'name' => 'x'
+                    ]
+                ],
+                'environment' => []
+            ],
+            'environment' => [],
+            'continuation' => [
+                [null, [['type' => 'CONST', 'value' => 1], []]]
+            ]
+        ];
+
         return [
-            [$input1, $output1]
+            [$input1, $output1],
+            [$input2, $output2]
         ];
     }
 }

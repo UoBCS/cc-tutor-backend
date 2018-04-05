@@ -19,8 +19,8 @@ class Frame implements JsonSerializable
     {
         if ($data[0] === null) {
             $pair = new Pair($data[0], new Pair(
-                Expression::fromJson($data[1]['expression']),
-                Environment::fromJson($data[1]['environment'])
+                Expression::fromJson(isset($data[1]['expression']) ? $data[1]['expression'] : $data[1][0]),
+                Environment::fromJson(isset($data[1]['environment']) ? $data[1]['environment'] : $data[1][1])
             ));
 
             return new Frame($pair);
