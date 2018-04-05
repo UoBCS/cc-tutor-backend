@@ -35,7 +35,7 @@ class LR extends NonDeterministicParser
         $stackCount = count($stackArr);
         if ($stackCount === 1 &&
             $this->grammar->getStartSymbol()->equals($grammarEntity)) {
-            // success
+            throw new ParserException('The parsing process has finished.');
         }
 
         if (!$this->grammar->hasProduction($lhs, $rhs)) {
@@ -74,7 +74,7 @@ class LR extends NonDeterministicParser
             $stackCount = count($this->stack->toArray());
             if ($stackCount === 1 &&
                 $this->grammar->getStartSymbol()->equals($grammarEntity)) {
-                // success
+                throw new ParserException('The parsing process has finished.');
             } else {
                 throw new ParserException('Error processing.');
             }

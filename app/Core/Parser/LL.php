@@ -28,7 +28,7 @@ class LL extends NonDeterministicParser
     {
         if ($this->stack->isEmpty()) {
             if ($this->input->hasFinished()) {
-                // success
+                throw new ParserException('The parsing process has finished.');
             } else {
                 $tokens = array_map(function ($token) {
                     return $token->getType()->name;
@@ -68,13 +68,12 @@ class LL extends NonDeterministicParser
     {
         if ($this->input->hasFinished()) {
             if ($this->stack->isEmpty()) {
-                // success
+                throw new ParserException('The parsing process has finished.');
             } else {
                 throw new ParserException('Premature end of input.');
             }
         }
 
-        //$inputTerminal = new Terminal($this->input->read()->getType());
         $inputTerminal = $this->input->read()->toTerminal();
 
         if (!$this->stack->peek()->isTerminal()) {
